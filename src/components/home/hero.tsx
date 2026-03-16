@@ -11,14 +11,24 @@ export function Hero() {
   const tCommon = useTranslations("common");
   const bgRef = useRef<HTMLDivElement>(null);
 
-  // Parallax scroll effect
+  // Parallax scroll effect — disabled on mobile/tablet for performance
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    if (!mq.matches) return;
+
+    let ticking = false;
     const handleScroll = () => {
-      if (bgRef.current) {
-        const scrolled = window.scrollY;
-        bgRef.current.style.transform = `translateY(${scrolled * 0.35}px) scale(1.1)`;
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          if (bgRef.current) {
+            bgRef.current.style.transform = `translateY(${window.scrollY * 0.35}px) scale(1.1)`;
+          }
+          ticking = false;
+        });
       }
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
