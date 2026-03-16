@@ -36,7 +36,10 @@ function getVisitorId(): string {
     .find((c) => c.startsWith("visitorId="));
   if (match) return match.split("=")[1];
 
-  const id = crypto.randomUUID();
+  const id =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
   document.cookie = `visitorId=${id}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
   return id;
 }
