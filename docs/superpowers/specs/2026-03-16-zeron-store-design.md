@@ -21,7 +21,7 @@ Zeron is a streetwear clothing brand launching a direct-to-consumer online store
 | Chatbot | Amazon Bedrock (Claude) |
 | i18n | next-intl |
 | Charts | Recharts |
-| Email | Resend |
+| Email | Amazon SES |
 | Theme | next-themes (dark default) |
 
 ### Approach: Monolith Next.js
@@ -162,6 +162,15 @@ Next.js middleware handles:
 | active | boolean | |
 | updatedAt | timestamp | |
 
+### `wishlists/{userId}`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| productIds | array | List of product IDs saved as favorites |
+| updatedAt | timestamp | |
+
+One document per user. Heart icon on product cards and product detail pages toggles the product in/out of the wishlist. Viewable from `/account/wishlist`.
+
 ### `settings/general`
 
 | Field | Type | Description |
@@ -199,12 +208,12 @@ Carts are stored in Firestore keyed by a visitor ID (stored in a cookie). When a
 
 | Page | Route | Description |
 |------|-------|-------------|
-| Home | `/` | Hero image/video, featured drops, categories, promo banner |
+| Home | `/` | Hero section with Zeron logo (`zeron_logo.webp`), featured drops, categories, promo banner |
 | Catalog | `/shop` | Product grid with filters (category, size, price), sorting |
 | Category | `/shop/[category]` | Catalog filtered by category |
 | Product | `/shop/[category]/[slug]` | Gallery, size selector, stock, add to cart |
 | Cart | `/cart` | Item list, apply promo code, price summary |
-| Checkout | `/checkout` | Shipping form → redirect to Stripe Checkout |
+| Checkout | `/checkout` | Select saved address or enter new one → redirect to Stripe Checkout |
 | Confirmation | `/checkout/success` | Post-payment order confirmation |
 | Contact | `/contact` | Contact form (sends email via Route Handler) |
 
@@ -214,7 +223,8 @@ Carts are stored in Firestore keyed by a visitor ID (stored in a cookie). When a
 |------|-------|-------------|
 | My Orders | `/account/orders` | Order list with status |
 | Order Detail | `/account/orders/[id]` | Products, address, detailed status |
-| Profile | `/account/profile` | Edit name, email, address, preferred locale |
+| Profile | `/account/profile` | Edit name, email, preferred locale, manage saved shipping addresses |
+| Wishlist | `/account/wishlist` | Saved favorite products, add to cart from wishlist |
 | Password | `/account/password` | Change password |
 
 ### Auth (`/[locale]/(auth)/`)
@@ -242,7 +252,7 @@ Carts are stored in Firestore keyed by a visitor ID (stored in a cookie). When a
 ```
 Browse catalog → Select product/size → Add to cart
 → View cart → Apply promo (optional) → Checkout
-→ Fill shipping address → Stripe Checkout (hosted)
+→ Select saved address or enter new one → Stripe Checkout (hosted)
 → Webhook confirms payment → Order created in Firestore → Confirmation email
 → Redirect to success page
 ```
@@ -289,8 +299,8 @@ Browse catalog → Select product/size → Add to cart
 
 ### Contact Form
 
-- Route Handler `/api/contact` sends email via **Resend** (transactional email API)
-- Resend also handles order confirmation emails (triggered after successful payment webhook)
+- Route Handler `/api/contact` sends email via **Amazon SES**
+- SES also handles order confirmation emails (triggered after successful payment webhook)
 - Password reset emails use Firebase Auth's built-in email service (no custom handling needed)
 
 ### SEO
@@ -345,7 +355,7 @@ No JavaScript animation libraries. All animations are CSS native for minimal bun
 
 ### Components
 
-- **Product cards**: Dominant image, hover reveals second image, subtle scale effect, name and price below
+- **Product cards**: Dominant image, hover reveals second image, subtle scale effect, name and price below, heart icon for wishlist toggle
 - **Navigation**: Fixed header with backdrop blur, centered logo, categories left, cart/account right
 - **Mobile**: Hamburger menu with animated drawer, bottom bar with icons (home, shop, cart, account)
 - **Cart**: Right-side drawer (not a separate page, except during checkout flow)
@@ -416,7 +426,6 @@ Promotional banners are not a separate type — any promotion with `showBanner: 
 
 ## Non-Goals (Out of Scope)
 
-- Wishlist / favorites
 - Product reviews and ratings
 - Inventory alerts / low stock notifications
 - Order tracking integration with carriers
