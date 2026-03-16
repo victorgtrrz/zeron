@@ -229,10 +229,10 @@ export function Filters() {
       </aside>
 
       {/* Mobile toggle */}
-      <div className="mb-4 md:hidden">
+      <div className="mb-3 md:hidden">
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-background"
+          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-background"
         >
           <SlidersHorizontal className="h-4 w-4" />
           {t("filters")}

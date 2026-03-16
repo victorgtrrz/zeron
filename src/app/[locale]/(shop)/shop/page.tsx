@@ -84,10 +84,10 @@ export default async function ShopPage({
         {t("shop")}
       </h1>
 
-      <div className="flex gap-8">
+      <div className="flex flex-col gap-0 md:flex-row md:gap-8">
         <Filters />
         <div className="min-w-0 flex-1">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between md:mb-6">
             <p className="text-sm text-muted">
               {products.length} {products.length === 1 ? "product" : "products"}
             </p>

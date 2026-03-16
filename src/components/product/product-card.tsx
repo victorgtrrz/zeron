@@ -84,12 +84,12 @@ export function ProductCard({ product, locale }: ProductCardProps) {
       </Link>
 
       {/* Info + Add to cart */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         <Link href={href}>
-          <h3 className="truncate text-sm font-medium text-accent transition-colors group-hover:text-brand">
+          <h3 className="truncate text-xs font-medium text-accent transition-colors group-hover:text-brand sm:text-sm">
             {name}
           </h3>
-          <p className="mt-1 text-sm font-bold text-accent">{price}</p>
+          <p className="mt-1 text-xs font-bold text-accent sm:text-sm">{price}</p>
         </Link>
 
         {/* Add to cart button */}
@@ -97,7 +97,7 @@ export function ProductCard({ product, locale }: ProductCardProps) {
           <div className="relative mt-3">
             <button
               onClick={() => setShowSizes((prev) => !prev)}
-              className={`flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex w-full items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 sm:gap-2 sm:py-2 sm:text-xs ${
                 added
                   ? "border-success bg-success/10 text-success"
                   : "border-border text-muted hover:border-highlight hover:text-highlight"

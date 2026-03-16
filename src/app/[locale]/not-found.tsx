@@ -5,7 +5,6 @@ import { Link } from "@/i18n/navigation";
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { MobileBottomBar } from "@/components/layout/mobile-bottom-bar";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
 
 export default function NotFound() {
@@ -17,7 +16,7 @@ export default function NotFound() {
         <Header />
       </div>
 
-      <main className="pb-16 md:pb-0">
+      <main>
         <section className="grain-overlay relative flex min-h-[80vh] items-center justify-center overflow-hidden px-4">
           {/* Giant decorative 404 background */}
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
@@ -91,7 +90,6 @@ export default function NotFound() {
       </main>
 
       <Footer />
-      <MobileBottomBar />
       <ChatWidget />
     </div>
   );
