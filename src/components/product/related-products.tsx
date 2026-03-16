@@ -15,7 +15,7 @@ export function RelatedProducts({ products, locale }: RelatedProductsProps) {
   if (products.length === 0) return null;
 
   return (
-    <section className="mt-20 pt-14">
+    <section className="pt-12">
       {/* Section header */}
       <div className="mb-10 flex items-center gap-4">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
