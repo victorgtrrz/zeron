@@ -9,9 +9,11 @@ import { ChatWidget } from "@/components/chatbot/chat-widget";
 export default function ShopLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-accent">
-      <PromoBanner />
-      <Header />
-      <main className="pt-16 pb-16 md:pb-0">{children}</main>
+      <div className="sticky top-0 z-50">
+        <PromoBanner />
+        <Header />
+      </div>
+      <main className="pb-16 md:pb-0">{children}</main>
       <Footer />
       <MobileBottomBar />
       <CartDrawer />

@@ -16,31 +16,43 @@ export function Footer() {
   const tFooter = useTranslations("footer");
 
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    <footer className="relative overflow-hidden border-t border-border bg-surface">
+      {/* Gradient top border accent */}
+      <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-highlight/50 to-transparent" />
+
+      {/* Large decorative background text */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+        <span className="select-none font-heading text-[12rem] leading-none tracking-widest text-accent/[0.02] sm:text-[16rem] lg:text-[20rem]">
+          ZERON
+        </span>
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-4 py-16">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand info */}
-          <div>
-            <h3 className="font-heading text-xl font-bold tracking-tight text-accent">
+          <div className="lg:col-span-2">
+            <h3 className="font-heading text-3xl tracking-widest text-accent">
               ZERON
             </h3>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
               Streetwear without limits. Exclusive urban clothing for those who
               dare to stand out.
             </p>
+            {/* Decorative line */}
+            <div className="mt-6 h-px w-12 bg-highlight/50" />
           </div>
 
           {/* Category links */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">
+            <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-highlight">
               {tNav("categories")}
             </h4>
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-3">
               {categoryLinks.map((cat) => (
                 <li key={cat.slug}>
                   <Link
-                    href={`/shop/${cat.slug}`}
-                    className="text-sm text-accent transition-colors duration-200 hover:text-muted"
+                    href={`/shop?category=${cat.slug}`}
+                    className="footer-link text-sm text-muted transition-colors duration-200 hover:text-accent"
                   >
                     {tNav(cat.key)}
                   </Link>
@@ -51,12 +63,12 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">
+            <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-highlight">
               {tNav("contact")}
             </h4>
             <Link
               href="/contact"
-              className="text-sm text-accent transition-colors duration-200 hover:text-muted"
+              className="footer-link text-sm text-muted transition-colors duration-200 hover:text-accent"
             >
               {tNav("contact")}
             </Link>
@@ -64,10 +76,21 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
-          <p className="text-xs text-muted">
-            &copy; 2026 ZERON. {tFooter("rights")}.
-          </p>
+        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
+          <div className="flex flex-col items-center gap-1 text-xs text-muted sm:items-start">
+            <p>&copy; 2026 ZERON. {tFooter("rights")}.</p>
+            <p>
+              {tFooter("madeBy")}{" "}
+              <a
+                href="https://network-88.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-highlight transition-opacity duration-200 hover:opacity-70"
+              >
+                network-88.com
+              </a>
+            </p>
+          </div>
           <LocaleSwitcher />
         </div>
       </div>

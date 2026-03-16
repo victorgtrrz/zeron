@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,10 +23,23 @@ export function Header() {
   const t = useTranslations("nav");
   const { user, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border bg-background/80 backdrop-blur-md">
+      <header
+        className={`h-16 border-b transition-all duration-300 ${
+          scrolled
+            ? "border-border bg-background/90 backdrop-blur-xl"
+            : "border-transparent bg-background/50 backdrop-blur-md"
+        }`}
+      >
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
           {/* Left: Hamburger (mobile) + Category links (desktop) */}
           <div className="flex items-center gap-6">
@@ -38,12 +51,12 @@ export function Header() {
               <Menu className="h-5 w-5" />
             </button>
 
-            <nav className="hidden items-center gap-5 md:flex">
+            <nav className="hidden items-center gap-6 md:flex">
               {categoryLinks.map((cat) => (
                 <Link
                   key={cat.slug}
-                  href={`/shop/${cat.slug}`}
-                  className="text-sm font-medium text-muted transition-colors duration-200 hover:text-accent"
+                  href={`/shop?category=${cat.slug}`}
+                  className="nav-link-animated text-xs font-medium uppercase tracking-[0.15em] text-muted transition-colors duration-200 hover:text-accent"
                 >
                   {t(cat.key)}
                 </Link>
@@ -54,7 +67,7 @@ export function Header() {
           {/* Center: Logo */}
           <Link
             href="/"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 hover:opacity-80"
           >
             <Image
               src="/zeron_logo.webp"

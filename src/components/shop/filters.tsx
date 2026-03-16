@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -39,28 +39,59 @@ export function Filters() {
     getCategories().then(setCategories).catch(() => {});
   }, []);
 
-  function toggleSize(size: string) {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-    );
+  // Sync local state when URL changes externally (e.g. back/forward navigation)
+  useEffect(() => {
+    setSelectedCategory(searchParams.get("category") ?? "");
+    setSelectedSizes(searchParams.get("sizes")?.split(",").filter(Boolean) ?? []);
+    setMinPrice(searchParams.get("minPrice") ?? "");
+    setMaxPrice(searchParams.get("maxPrice") ?? "");
+  }, [searchParams]);
+
+  const navigate = useCallback(
+    (overrides: {
+      category?: string;
+      sizes?: string[];
+      min?: string;
+      max?: string;
+    }) => {
+      const cat = overrides.category ?? selectedCategory;
+      const sizes = overrides.sizes ?? selectedSizes;
+      const min = overrides.min ?? minPrice;
+      const max = overrides.max ?? maxPrice;
+
+      const params = new URLSearchParams();
+      if (cat) params.set("category", cat);
+      if (sizes.length > 0) params.set("sizes", sizes.join(","));
+      if (min) params.set("minPrice", min);
+      if (max) params.set("maxPrice", max);
+
+      const sort = searchParams.get("sort");
+      if (sort) params.set("sort", sort);
+
+      const qs = params.toString();
+      startTransition(() => {
+        router.push(`/shop${qs ? `?${qs}` : ""}`);
+      });
+    },
+    [selectedCategory, selectedSizes, minPrice, maxPrice, searchParams, router, startTransition]
+  );
+
+  function selectCategory(slug: string) {
+    if (selectedCategory === slug) return;
+    setSelectedCategory(slug);
+    navigate({ category: slug });
   }
 
-  function applyFilters() {
-    const params = new URLSearchParams();
-    if (selectedCategory) params.set("category", selectedCategory);
-    if (selectedSizes.length > 0) params.set("sizes", selectedSizes.join(","));
-    if (minPrice) params.set("minPrice", minPrice);
-    if (maxPrice) params.set("maxPrice", maxPrice);
+  function toggleSize(size: string) {
+    const next = selectedSizes.includes(size)
+      ? selectedSizes.filter((s) => s !== size)
+      : [...selectedSizes, size];
+    setSelectedSizes(next);
+    navigate({ sizes: next });
+  }
 
-    // Preserve sort
-    const sort = searchParams.get("sort");
-    if (sort) params.set("sort", sort);
-
-    const qs = params.toString();
-    startTransition(() => {
-      router.push(`/shop${qs ? `?${qs}` : ""}`);
-    });
-    setIsOpen(false);
+  function handlePriceBlur() {
+    navigate({ min: minPrice, max: maxPrice });
   }
 
   function clearFilters() {
@@ -89,26 +120,34 @@ export function Filters() {
         <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-accent">
           {t("allCategories")}
         </h3>
-        <div className="space-y-2">
-          {categories.map((cat) => (
-            <label
-              key={cat.id}
-              className="flex cursor-pointer items-center gap-2 text-sm text-accent"
-            >
-              <input
-                type="radio"
-                name="category"
-                checked={selectedCategory === cat.id}
-                onChange={() =>
-                  setSelectedCategory(
-                    selectedCategory === cat.id ? "" : cat.id
-                  )
-                }
-                className="accent-accent"
-              />
-              {cat.name[locale] || cat.name.en}
-            </label>
-          ))}
+        <div className="space-y-1">
+          {categories.map((cat) => {
+            const active = selectedCategory === cat.slug;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => selectCategory(cat.slug)}
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                  active
+                    ? "bg-accent/10 font-semibold text-accent"
+                    : "text-muted hover:bg-surface hover:text-accent"
+                }`}
+              >
+                <span
+                  className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border ${
+                    active
+                      ? "border-highlight bg-highlight"
+                      : "border-muted"
+                  }`}
+                >
+                  {active && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-background" />
+                  )}
+                </span>
+                {cat.name[locale] || cat.name.en}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -145,6 +184,8 @@ export function Filters() {
             placeholder="Min"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
+            onBlur={handlePriceBlur}
+            onKeyDown={(e) => e.key === "Enter" && handlePriceBlur()}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-accent placeholder:text-muted focus:border-accent focus:outline-none"
           />
           <span className="text-muted">—</span>
@@ -153,29 +194,24 @@ export function Filters() {
             placeholder="Max"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
+            onBlur={handlePriceBlur}
+            onKeyDown={(e) => e.key === "Enter" && handlePriceBlur()}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-accent placeholder:text-muted focus:border-accent focus:outline-none"
           />
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-2">
+      {/* Clear button */}
+      {hasFilters && (
         <button
-          onClick={applyFilters}
+          onClick={clearFilters}
           disabled={isPending}
-          className="flex-1 rounded-lg bg-accent py-2.5 text-sm font-bold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2.5 text-sm text-muted transition-colors hover:text-accent disabled:opacity-50"
         >
-          {t("filters")}
+          <X className="h-4 w-4" />
+          {t("allCategories")}
         </button>
-        {hasFilters && (
-          <button
-            onClick={clearFilters}
-            className="rounded-lg border border-border px-4 py-2.5 text-sm text-muted transition-colors hover:text-accent"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      )}
     </div>
   );
 

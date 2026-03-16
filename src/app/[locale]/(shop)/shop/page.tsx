@@ -1,5 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { getProducts, getCategories, getCategoryBySlug } from "@/lib/firebase/firestore";
+import { getProducts, getCategoryBySlug } from "@/lib/firebase/firestore";
 import { ProductGrid } from "@/components/shop/product-grid";
 import { Filters } from "@/components/shop/filters";
 import { SortSelect } from "@/components/shop/sort-select";
@@ -31,7 +31,7 @@ export default async function ShopPage({
   setRequestLocale(locale);
 
   const sp = await searchParams;
-  const categoryFilter = typeof sp.category === "string" ? sp.category : undefined;
+  const categorySlug = typeof sp.category === "string" ? sp.category : undefined;
   const sizesFilter = typeof sp.sizes === "string" ? sp.sizes.split(",").filter(Boolean) : undefined;
   const minPriceStr = typeof sp.minPrice === "string" ? sp.minPrice : undefined;
   const maxPriceStr = typeof sp.maxPrice === "string" ? sp.maxPrice : undefined;
@@ -41,8 +41,12 @@ export default async function ShopPage({
     status: "active",
   };
 
-  if (categoryFilter) {
-    filters.categoryId = categoryFilter;
+  // Resolve category slug to ID for Firestore query
+  if (categorySlug) {
+    const cat = await getCategoryBySlug(categorySlug);
+    if (cat) {
+      filters.categoryId = cat.id;
+    }
   }
 
   if (sortParam === "price-asc" || sortParam === "price-desc" || sortParam === "name-asc" || sortParam === "newest") {
@@ -75,8 +79,8 @@ export default async function ShopPage({
   const t = await getTranslations({ locale, namespace: "nav" });
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10">
-      <h1 className="mb-8 font-heading text-3xl font-bold tracking-tight text-accent md:text-4xl">
+    <section className="mx-auto min-h-screen max-w-7xl px-4 py-10">
+      <h1 className="mb-8 font-heading text-3xl tracking-wider text-accent md:text-4xl">
         {t("shop")}
       </h1>
 

@@ -79,7 +79,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {categoryLinks.map((cat) => (
             <Link
               key={cat.slug}
-              href={`/shop/${cat.slug}`}
+              href={`/shop?category=${cat.slug}`}
               onClick={onClose}
               className="rounded-md px-3 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-background"
             >

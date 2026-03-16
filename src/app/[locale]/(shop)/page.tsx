@@ -2,6 +2,8 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { Hero } from "@/components/home/hero";
 import { CategoryGrid } from "@/components/home/category-grid";
+import { BrandStory } from "@/components/home/brand-story";
+import { Newsletter } from "@/components/home/newsletter";
 
 export async function generateMetadata({
   params,
@@ -29,6 +31,8 @@ export default async function HomePage({
     <>
       <Hero />
       <CategoryGrid />
+      <BrandStory />
+      <Newsletter />
     </>
   );
 }

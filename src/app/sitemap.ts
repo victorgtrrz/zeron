@@ -22,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // ---- Categories ----
+  // ---- Categories (as filtered shop URLs) ----
   try {
     const categoriesSnap = await adminDb
       .collection("categories")
@@ -35,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       for (const locale of LOCALES) {
         entries.push({
-          url: `${BASE_URL}/${locale}/shop/${slug}`,
+          url: `${BASE_URL}/${locale}/shop?category=${slug}`,
           lastModified: new Date(),
           changeFrequency: "weekly",
           priority: 0.7,
@@ -53,23 +53,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .where("status", "==", "active")
       .get();
 
-    // Preload categories for slug lookup
-    const categoriesSnap = await adminDb.collection("categories").get();
-    const categoryMap = new Map<string, string>();
-    for (const doc of categoriesSnap.docs) {
-      categoryMap.set(doc.id, doc.data().slug as string);
-    }
-
     for (const doc of productsSnap.docs) {
       const data = doc.data();
       const productSlug = data.slug as string;
-      const categoryId = data.categoryId as string;
-      const categorySlug = categoryMap.get(categoryId) ?? "uncategorized";
       const updatedAt = data.updatedAt?.toDate?.() ?? new Date();
 
       for (const locale of LOCALES) {
         entries.push({
-          url: `${BASE_URL}/${locale}/shop/${categorySlug}/${productSlug}`,
+          url: `${BASE_URL}/${locale}/shop/${productSlug}`,
           lastModified: updatedAt,
           changeFrequency: "weekly",
           priority: 0.6,

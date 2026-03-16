@@ -156,7 +156,43 @@
   },
   "footer": {
     "rights": "Todos los derechos reservados",
-    "followUs": "Síguenos"
+    "followUs": "Síguenos",
+    "madeBy": "Desarrollado por"
+  },
+  "brandStory": {
+    "label": "// Nuestra historia",
+    "headingLine1": "No seguimos tendencias.",
+    "headingLine2": "Las creamos.",
+    "p1": "Zeron Lab nació de una simple frustración compartida por dos hermanos: el mundo de la moda nunca terminaba de representarnos de verdad.",
+    "p2": "Crecimos con una profunda pasión por el estilo y pasamos años buscando ropa que capturara nuestra energía — algo natural pero atrevido, relajado pero premium, que combinara la comodidad del día a día con un toque sutil de personalidad. Pero las opciones siempre se quedaban cortas: demasiado corporativas, demasiado llamativas, demasiado genéricas. Nada hablaba de la mezcla de culturas, ciudades y experiencias que moldearon nuestras vidas.",
+    "p3": "Esa búsqueda se convirtió en un viaje. A lo largo de los años, vivimos y nos sumergimos en algunas de las ciudades más inspiradoras del mundo, absorbiendo diferentes perspectivas sobre diseño, cultura callejera y artesanía:",
+    "citySantander": "donde nos enamoramos del minimalismo europeo y la sastrería atemporal.",
+    "cityBarcelona": "absorbiendo la creatividad mediterránea y la vibrante energía callejera.",
+    "cityBostonDublin": "descubriendo el lado crudo e intelectual del estilo urbano.",
+    "cityLondon": "el epicentro de la moda global y las subculturas eclécticas.",
+    "cityWellington": "abrazando el estilo relajado kiwi y las escenas independientes más innovadoras.",
+    "p4": "Cada ciudad añadió capas a nuestra visión — ideas sobre tejidos de calidad, detalles cuidados y ropa que se siente como una extensión de tu personalidad, no como un disfraz.",
+    "p5": "Finalmente, el viaje nos trajo a Hong Kong, una ciudad que fusiona a la perfección el caos y la calma, la tradición y el futurismo, Oriente y Occidente. Aquí, en el corazón de las calles más dinámicas de Asia, encontramos la pieza que faltaba: un lugar donde el streetwear premium puede sentirse auténtico, sin pretensiones y profundamente conectado con la vida real — siesta bajo luces de neón, sol filtrándose entre rascacielos y esa confianza natural de moverse por una ciudad que nunca duerme.",
+    "p6": "Zeron Lab es el resultado. Una marca de streetwear premium con raíces en Hong Kong, diseñada para personas que quieren básicos elevados con personalidad: líneas limpias, materiales de alta calidad y guiños sutiles a las culturas y ciudades que hemos llamado hogar. Desde camisetas y sudaderas relajadas hasta piezas que hacen la transición del día a la noche, cada prenda está hecha para vivirla, no solo para vestirla.",
+    "p7": "Creamos Zeron Lab porque queríamos vestir lo que no podíamos encontrar. Ahora esperamos que también conecte contigo.",
+    "signoff": "Bienvenido al Lab.",
+    "authors": "Los Hermanos Zeron"
+  },
+  "newsletter": {
+    "label": "// Newsletter",
+    "title": "Únete al movimiento",
+    "description": "Sé el primero en conocer nuevos drops, ofertas exclusivas y contenido que no encontrarás en ningún otro sitio.",
+    "placeholder": "tu@email.com",
+    "submit": "Suscribirse",
+    "success": "¡Bienvenido al Team ZERON!",
+    "disclaimer": "Sin spam. Cancela cuando quieras."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Perdido en las calles",
+    "description": "La página que buscas no existe o ha sido movida. Pero la colección sigue aquí.",
+    "backHome": "Volver al inicio",
+    "backShop": "Explorar la tienda"
   },
   "orderStatus": {
     "pending": "Pendiente",

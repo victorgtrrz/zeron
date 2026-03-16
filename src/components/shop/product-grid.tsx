@@ -4,10 +4,9 @@ import type { Product, Locale } from "@/types";
 interface ProductGridProps {
   products: Product[];
   locale: Locale;
-  categorySlug?: string;
 }
 
-export function ProductGrid({ products, locale, categorySlug }: ProductGridProps) {
+export function ProductGrid({ products, locale }: ProductGridProps) {
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-surface py-20 text-center">
@@ -23,7 +22,6 @@ export function ProductGrid({ products, locale, categorySlug }: ProductGridProps
           key={product.id}
           product={product}
           locale={locale}
-          categorySlug={categorySlug}
         />
       ))}
     </div>

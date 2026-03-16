@@ -2,26 +2,42 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingBag, Check } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { useCart } from "@/hooks/use-cart";
+import { useTranslations } from "next-intl";
 import type { Product, Locale } from "@/types";
 
 interface ProductCardProps {
   product: Product;
   locale: Locale;
-  categorySlug?: string;
 }
 
-export function ProductCard({ product, locale, categorySlug }: ProductCardProps) {
+export function ProductCard({ product, locale }: ProductCardProps) {
   const [isWished, setIsWished] = useState(false);
+  const [showSizes, setShowSizes] = useState(false);
+  const [added, setAdded] = useState(false);
+  const { addItem, openCart } = useCart();
+  const t = useTranslations("common");
+  const tProduct = useTranslations("product");
+
   const name = product.name[locale] || product.name.en || "";
   const price = `$${(product.basePrice / 100).toFixed(2)}`;
   const firstImage = product.images[0] ?? "";
   const secondImage = product.images[1] ?? "";
+  const href = `/shop/${product.slug}`;
 
-  const href = categorySlug
-    ? `/shop/${categorySlug}/${product.slug}`
-    : `/shop/${product.slug}`;
+  const availableSizes = product.sizes.filter(
+    (s) => (product.stock[s] ?? 0) > 0
+  );
+
+  function handleAddToCart(size: string) {
+    addItem(product, size, 1);
+    setShowSizes(false);
+    setAdded(true);
+    openCart();
+    setTimeout(() => setAdded(false), 2000);
+  }
 
   return (
     <div className="group relative overflow-hidden rounded-xl bg-surface transition-shadow duration-300 hover:shadow-lg">
@@ -65,15 +81,77 @@ export function ProductCard({ product, locale, categorySlug }: ProductCardProps)
             />
           )}
         </div>
+      </Link>
 
-        {/* Info */}
-        <div className="p-4">
+      {/* Info + Add to cart */}
+      <div className="p-4">
+        <Link href={href}>
           <h3 className="truncate text-sm font-medium text-accent transition-colors group-hover:text-brand">
             {name}
           </h3>
           <p className="mt-1 text-sm font-bold text-accent">{price}</p>
-        </div>
-      </Link>
+        </Link>
+
+        {/* Add to cart button */}
+        {availableSizes.length > 0 && (
+          <div className="relative mt-3">
+            <button
+              onClick={() => setShowSizes((prev) => !prev)}
+              className={`flex w-full items-center justify-center gap-2 rounded-lg border py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                added
+                  ? "border-success bg-success/10 text-success"
+                  : "border-border text-muted hover:border-highlight hover:text-highlight"
+              }`}
+            >
+              {added ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  {tProduct("addedToCart")}
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  {t("addToCart")}
+                </>
+              )}
+            </button>
+
+            {/* Size picker overlay */}
+            {showSizes && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowSizes(false)}
+                />
+                <div className="absolute bottom-full left-0 right-0 z-20 mb-1 animate-scale-in rounded-lg border border-border bg-surface p-3 shadow-xl">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                    {tProduct("selectSize")}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {product.sizes.map((size) => {
+                      const inStock = (product.stock[size] ?? 0) > 0;
+                      return (
+                        <button
+                          key={size}
+                          disabled={!inStock}
+                          onClick={() => handleAddToCart(size)}
+                          className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+                            inStock
+                              ? "border-border text-accent hover:border-highlight hover:text-highlight"
+                              : "border-border/50 text-muted/40 line-through"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
