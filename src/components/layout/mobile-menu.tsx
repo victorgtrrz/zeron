@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthModal } from "@/lib/auth-modal-context";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -23,6 +24,7 @@ const categoryLinks = [
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const t = useTranslations("nav");
   const { user } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [animating, setAnimating] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -95,23 +97,23 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             {t("account")}
           </p>
           {user ? (
-            <>
-              <Link
-                href="/account/orders"
-                onClick={onClose}
-                className="rounded-md px-3 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-background"
-              >
-                {t("account")}
-              </Link>
-            </>
-          ) : (
             <Link
-              href="/login"
+              href="/account/orders"
               onClick={onClose}
               className="rounded-md px-3 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-background"
             >
-              {t("login")}
+              {t("account")}
             </Link>
+          ) : (
+            <button
+              onClick={() => {
+                onClose();
+                openAuthModal("login");
+              }}
+              className="rounded-md px-3 py-2.5 text-left text-sm font-medium text-accent transition-colors hover:bg-background"
+            >
+              {t("login")}
+            </button>
           )}
 
           <Link

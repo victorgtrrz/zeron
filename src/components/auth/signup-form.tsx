@@ -8,7 +8,12 @@ import { signUpWithEmail } from "@/lib/firebase/auth";
 import { createUser } from "@/lib/firebase/firestore";
 import { updateProfile } from "firebase/auth";
 
-export default function SignupForm() {
+interface SignupFormProps {
+  onSwitchToLogin?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function SignupForm({ onSwitchToLogin, onSuccess }: SignupFormProps) {
   const t = useTranslations("auth");
 
   const [displayName, setDisplayName] = useState("");
@@ -19,6 +24,8 @@ export default function SignupForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const isModal = !!onSuccess;
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -64,7 +71,11 @@ export default function SignupForm() {
         photoURL: "",
       });
 
-      setSuccess(true);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setSuccess(true);
+      }
     } catch {
       setError(t("signupError"));
     } finally {
@@ -96,18 +107,28 @@ export default function SignupForm() {
           {t("signup")}
         </h2>
         <p className="mb-6 text-sm text-muted">{t("signupSuccess")}</p>
-        <Link
-          href="/login"
-          className="inline-block rounded-lg bg-accent px-6 py-3 font-bold text-background transition-opacity hover:opacity-90"
-        >
-          {t("login")}
-        </Link>
+        {onSwitchToLogin ? (
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="inline-block rounded-lg bg-accent px-6 py-3 font-bold text-background transition-opacity hover:opacity-90"
+          >
+            {t("login")}
+          </button>
+        ) : (
+          <Link
+            href="/login"
+            className="inline-block rounded-lg bg-accent px-6 py-3 font-bold text-background transition-opacity hover:opacity-90"
+          >
+            {t("login")}
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className={isModal ? "" : "animate-fade-in"}>
       <h1 className="mb-6 text-center font-heading text-2xl font-bold text-accent">
         {t("signup")}
       </h1>
@@ -115,7 +136,7 @@ export default function SignupForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
-            htmlFor="displayName"
+            htmlFor="signup-displayName"
             className="mb-1 block text-sm text-muted"
           >
             {t("displayName")}
@@ -123,12 +144,12 @@ export default function SignupForm() {
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="displayName"
+              id="signup-displayName"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               autoComplete="name"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("displayName")}
             />
           </div>
@@ -140,18 +161,18 @@ export default function SignupForm() {
         </div>
 
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm text-muted">
+          <label htmlFor="signup-email" className="mb-1 block text-sm text-muted">
             {t("email")}
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="email"
+              id="signup-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("email")}
             />
           </div>
@@ -163,18 +184,18 @@ export default function SignupForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm text-muted">
+          <label htmlFor="signup-password" className="mb-1 block text-sm text-muted">
             {t("password")}
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="password"
+              id="signup-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("password")}
             />
           </div>
@@ -187,7 +208,7 @@ export default function SignupForm() {
 
         <div>
           <label
-            htmlFor="confirmPassword"
+            htmlFor="signup-confirmPassword"
             className="mb-1 block text-sm text-muted"
           >
             {t("confirmPassword")}
@@ -195,12 +216,12 @@ export default function SignupForm() {
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="confirmPassword"
+              id="signup-confirmPassword"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="new-password"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("confirmPassword")}
             />
           </div>
@@ -230,12 +251,22 @@ export default function SignupForm() {
 
       <p className="mt-6 text-center text-sm text-muted">
         {t("hasAccount")}{" "}
-        <Link
-          href="/login"
-          className="font-medium text-accent underline underline-offset-4 transition-colors hover:text-brand"
-        >
-          {t("login")}
-        </Link>
+        {onSwitchToLogin ? (
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="font-medium text-accent underline underline-offset-4 transition-colors hover:text-brand"
+          >
+            {t("login")}
+          </button>
+        ) : (
+          <Link
+            href="/login"
+            className="font-medium text-accent underline underline-offset-4 transition-colors hover:text-brand"
+          >
+            {t("login")}
+          </Link>
+        )}
       </p>
     </div>
   );

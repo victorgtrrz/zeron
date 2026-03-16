@@ -22,7 +22,7 @@ export default async function AuthLayout({
             width={120}
             height={40}
             priority
-            className="h-auto w-auto"
+            className="h-auto w-auto dark:brightness-100 brightness-0"
           />
         </div>
         <div className="rounded-2xl border border-border bg-surface p-8 shadow-2xl">

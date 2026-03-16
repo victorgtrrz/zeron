@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
-import { Menu, User, Shield } from "lucide-react";
+import { useAuthModal } from "@/lib/auth-modal-context";
+import { Menu, Shield } from "lucide-react";
 import Image from "next/image";
 
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import { CartIcon } from "./cart-icon";
 import { MobileMenu } from "./mobile-menu";
+import { UserAvatarOrIcon } from "./user-avatar";
 
 const categoryLinks = [
   { slug: "tshirts", key: "tshirts" as const },
@@ -22,6 +24,7 @@ const categoryLinks = [
 export function Header() {
   const t = useTranslations("nav");
   const { user, isAdmin } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -74,7 +77,7 @@ export function Header() {
               alt="Zeron"
               width={120}
               height={40}
-              className="h-8 w-auto"
+              className="h-8 w-auto dark:brightness-100 brightness-0"
               priority
             />
           </Link>
@@ -87,24 +90,34 @@ export function Header() {
             <ThemeToggle />
             <CartIcon />
 
-            {/* User icon */}
-            <Link
-              href={user ? "/account/orders" : "/login"}
-              className="rounded-md p-2 text-accent transition-colors hover:bg-surface"
-              aria-label={user ? t("account") : t("login")}
-            >
-              <User className="h-4 w-4" />
-            </Link>
-
-            {/* Admin icon */}
-            {isAdmin && (
+            {/* User avatar / icon */}
+            {user ? (
               <Link
+                href="/account/orders"
+                className="rounded-md p-2 text-accent transition-colors hover:bg-surface"
+                aria-label={t("account")}
+              >
+                <UserAvatarOrIcon user={user} />
+              </Link>
+            ) : (
+              <button
+                onClick={() => openAuthModal("login")}
+                className="rounded-md p-2 text-accent transition-colors hover:bg-surface"
+                aria-label={t("login")}
+              >
+                <UserAvatarOrIcon user={null} />
+              </button>
+            )}
+
+            {/* Admin icon — uses <a> to bypass i18n prefix */}
+            {isAdmin && (
+              <a
                 href="/zr-ops/"
                 className="rounded-md p-2 text-accent transition-colors hover:bg-surface"
                 aria-label="Admin panel"
               >
                 <Shield className="h-4 w-4" />
-              </Link>
+              </a>
             )}
           </div>
         </div>

@@ -6,7 +6,11 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { resetPassword } from "@/lib/firebase/auth";
 
-export default function ForgotPasswordForm() {
+interface ForgotPasswordFormProps {
+  onSwitchToLogin?: () => void;
+}
+
+export default function ForgotPasswordForm({ onSwitchToLogin }: ForgotPasswordFormProps) {
   const t = useTranslations("auth");
 
   const [email, setEmail] = useState("");
@@ -34,6 +38,25 @@ export default function ForgotPasswordForm() {
     }
   }
 
+  const backToLogin = onSwitchToLogin ? (
+    <button
+      type="button"
+      onClick={onSwitchToLogin}
+      className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-accent"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      {t("login")}
+    </button>
+  ) : (
+    <Link
+      href="/login"
+      className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-accent"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      {t("login")}
+    </Link>
+  );
+
   if (success) {
     return (
       <div className="animate-fade-in text-center">
@@ -46,19 +69,13 @@ export default function ForgotPasswordForm() {
           {t("resetPassword")}
         </h2>
         <p className="mb-6 text-sm text-muted">{t("resetSent")}</p>
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-accent"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("login")}
-        </Link>
+        <div>{backToLogin}</div>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className={onSwitchToLogin ? "" : "animate-fade-in"}>
       <h1 className="mb-2 text-center font-heading text-2xl font-bold text-accent">
         {t("resetPassword")}
       </h1>
@@ -68,18 +85,18 @@ export default function ForgotPasswordForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm text-muted">
+          <label htmlFor="forgot-email" className="mb-1 block text-sm text-muted">
             {t("email")}
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="email"
+              id="forgot-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("email")}
             />
           </div>
@@ -103,13 +120,7 @@ export default function ForgotPasswordForm() {
       </form>
 
       <div className="mt-6 text-center">
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-accent"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("login")}
-        </Link>
+        {backToLogin}
       </div>
     </div>
   );

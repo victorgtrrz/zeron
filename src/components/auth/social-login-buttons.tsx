@@ -7,11 +7,23 @@ import { useRouter } from "@/i18n/navigation";
 import { signInWithGoogle, signInWithApple } from "@/lib/firebase/auth";
 import { createUser } from "@/lib/firebase/firestore";
 
-export default function SocialLoginButtons() {
+interface SocialLoginButtonsProps {
+  onSuccess?: () => void;
+}
+
+export default function SocialLoginButtons({ onSuccess }: SocialLoginButtonsProps) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [loading, setLoading] = useState<"google" | "apple" | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  function handleSuccess() {
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      router.push("/");
+    }
+  }
 
   async function handleGoogleSignIn() {
     setLoading("google");
@@ -24,7 +36,7 @@ export default function SocialLoginButtons() {
         displayName: user.displayName ?? "",
         photoURL: user.photoURL ?? "",
       });
-      router.push("/");
+      handleSuccess();
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "An error occurred";
@@ -47,7 +59,7 @@ export default function SocialLoginButtons() {
         displayName: user.displayName ?? "",
         photoURL: user.photoURL ?? "",
       });
-      router.push("/");
+      handleSuccess();
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "An error occurred";
@@ -80,7 +92,7 @@ export default function SocialLoginButtons() {
         type="button"
         onClick={handleGoogleSignIn}
         disabled={loading !== null}
-        className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-surface px-6 py-3 text-accent transition-colors hover:bg-border disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-6 py-3 text-accent transition-colors hover:bg-border disabled:opacity-50"
       >
         {loading === "google" ? (
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
@@ -94,7 +106,7 @@ export default function SocialLoginButtons() {
         type="button"
         onClick={handleAppleSignIn}
         disabled={loading !== null}
-        className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-surface px-6 py-3 text-accent transition-colors hover:bg-border disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-background px-6 py-3 text-accent transition-colors hover:bg-border disabled:opacity-50"
       >
         {loading === "apple" ? (
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />

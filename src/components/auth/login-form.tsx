@@ -10,7 +10,13 @@ import { auth } from "@/lib/firebase/client";
 import { AuthContext } from "@/lib/auth-context";
 import SocialLoginButtons from "./social-login-buttons";
 
-export default function LoginForm() {
+interface LoginFormProps {
+  onSwitchToSignup?: () => void;
+  onSwitchToForgot?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function LoginForm({ onSwitchToSignup, onSwitchToForgot, onSuccess }: LoginFormProps) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const router = useRouter();
@@ -22,6 +28,8 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const isModal = !!onSuccess;
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -57,11 +65,11 @@ export default function LoginForm() {
         }
       }
 
-      const redirectTo = searchParams.get("redirect");
-      if (redirectTo) {
-        router.push(redirectTo);
+      if (onSuccess) {
+        onSuccess();
       } else {
-        router.push("/");
+        const redirectTo = searchParams.get("redirect");
+        router.push(redirectTo ?? "/");
       }
     } catch {
       setError(t("loginError"));
@@ -71,43 +79,43 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className={isModal ? "" : "animate-fade-in"}>
       <h1 className="mb-6 text-center font-heading text-2xl font-bold text-accent">
         {t("login")}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm text-muted">
+          <label htmlFor="login-email" className="mb-1 block text-sm text-muted">
             {t("email")}
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="email"
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("email")}
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm text-muted">
+          <label htmlFor="login-password" className="mb-1 block text-sm text-muted">
             {t("password")}
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
             <input
-              id="password"
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              className="w-full rounded-lg border border-border bg-surface py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg border border-border bg-background py-3 pl-11 pr-4 text-accent outline-none focus:ring-2 focus:ring-brand"
               placeholder={t("password")}
             />
           </div>
@@ -131,27 +139,47 @@ export default function LoginForm() {
       </form>
 
       <div className="mt-4 text-center">
-        <Link
-          href="/forgot-password"
-          className="text-sm text-muted transition-colors hover:text-accent"
-        >
-          {t("forgotPassword")}
-        </Link>
+        {onSwitchToForgot ? (
+          <button
+            type="button"
+            onClick={onSwitchToForgot}
+            className="text-sm text-muted transition-colors hover:text-accent"
+          >
+            {t("forgotPassword")}
+          </button>
+        ) : (
+          <Link
+            href="/forgot-password"
+            className="text-sm text-muted transition-colors hover:text-accent"
+          >
+            {t("forgotPassword")}
+          </Link>
+        )}
       </div>
 
-      <SocialLoginButtons />
+      <SocialLoginButtons onSuccess={onSuccess} />
 
       <p className="mt-6 text-center text-sm text-muted">
         {t("noAccount")}{" "}
-        <Link
-          href="/signup"
-          className="font-medium text-accent underline underline-offset-4 transition-colors hover:text-brand"
-        >
-          {t("signup")}
-        </Link>
+        {onSwitchToSignup ? (
+          <button
+            type="button"
+            onClick={onSwitchToSignup}
+            className="font-medium text-accent underline underline-offset-4 transition-colors hover:text-brand"
+          >
+            {t("signup")}
+          </button>
+        ) : (
+          <Link
+            href="/signup"
+            className="font-medium text-accent underline underline-offset-4 transition-colors hover:text-brand"
+          >
+            {t("signup")}
+          </Link>
+        )}
       </p>
 
-      {isAdmin && (
+      {isAdmin && !isModal && (
         <div className="mt-4 text-center">
           <Link
             href="/zr-ops/"
