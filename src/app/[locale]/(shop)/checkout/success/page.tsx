@@ -1,28 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Check, ShoppingBag } from "lucide-react";
 
-export default function CheckoutSuccessPage() {
+function SuccessContent() {
   const t = useTranslations("checkout");
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="animate-pulse text-muted">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 text-center">
@@ -57,5 +44,19 @@ export default function CheckoutSuccessPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="animate-pulse text-muted">Loading...</div>
+        </div>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
   );
 }
