@@ -48,7 +48,8 @@
     "sortPriceHigh": "價格：高至低",
     "sortNameAz": "名稱：A-Z",
     "priceRange": "價格範圍",
-    "allCategories": "所有分類"
+    "allCategories": "所有分類",
+    "relatedProducts": "你可能也喜歡"
   },
   "cart": {
     "title": "購物車",

@@ -48,7 +48,8 @@
     "sortPriceHigh": "Price: High to Low",
     "sortNameAz": "Name: A-Z",
     "priceRange": "Price Range",
-    "allCategories": "All Categories"
+    "allCategories": "All Categories",
+    "relatedProducts": "You Might Also Like"
   },
   "cart": {
     "title": "Shopping Cart",

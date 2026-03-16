@@ -1,9 +1,10 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { getProductBySlug } from "@/lib/firebase/firestore";
+import { getProductBySlug, getProducts } from "@/lib/firebase/firestore";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductDetailClient } from "@/components/product/product-detail-client";
 import { ProductJsonLd } from "@/components/product/product-jsonld";
+import { RelatedProducts } from "@/components/product/related-products";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@/types";
 import type { Metadata } from "next";
@@ -57,6 +58,14 @@ export default async function ProductDetailPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
+  // Fetch related products from the same category (exclude current)
+  const categoryProducts = await getProducts({
+    categoryId: product.categoryId,
+    status: "active",
+    limitCount: 9,
+  });
+  const relatedProducts = categoryProducts.filter((p) => p.id !== product.id).slice(0, 8);
+
   const name = product.name[locale as Locale] || product.name.en || "";
   const description =
     product.description[locale as Locale] || product.description.en || "";
@@ -87,6 +96,9 @@ export default async function ProductDetailPage({
           <ProductDetailClient product={product} />
         </div>
       </div>
+
+      {/* Related products from same category */}
+      <RelatedProducts products={relatedProducts} locale={locale as Locale} />
     </section>
   );
 }

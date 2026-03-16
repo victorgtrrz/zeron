@@ -48,7 +48,8 @@
     "sortPriceHigh": "Precio: Mayor a Menor",
     "sortNameAz": "Nombre: A-Z",
     "priceRange": "Rango de Precio",
-    "allCategories": "Todas las Categorías"
+    "allCategories": "Todas las Categorías",
+    "relatedProducts": "También Te Puede Gustar"
   },
   "cart": {
     "title": "Carrito de Compras",
