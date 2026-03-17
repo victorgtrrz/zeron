@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get("productId");
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const pageLimit = parseInt(searchParams.get("limit") || "10", 10);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
+    const pageLimit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10", 10) || 10));
 
     if (!productId) {
       return NextResponse.json(
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { productId, rating, comment } = body;
 
-    if (!productId || typeof productId !== "string") {
+    if (!productId || typeof productId !== "string" || productId.length > 256) {
       return NextResponse.json(
         { error: "productId is required" },
         { status: 400 }
