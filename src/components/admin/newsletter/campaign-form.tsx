@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send, Clock, Save, Eye, EyeOff } from "lucide-react";
 import { HtmlPreview } from "@/components/admin/newsletter/html-preview";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface CampaignFormProps {
   mode: "create" | "edit";
@@ -25,6 +26,7 @@ export function CampaignForm({ mode, initialData, templates = [] }: CampaignForm
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [showSendConfirm, setShowSendConfirm] = useState(false);
 
   async function handleSave() {
     if (!subject || !body) {
@@ -66,8 +68,6 @@ export function CampaignForm({ mode, initialData, templates = [] }: CampaignForm
   }
 
   async function handleSendNow() {
-    if (!confirm("Send this campaign to all subscribers now?")) return;
-
     // Save first if creating
     if (mode === "create") {
       await handleSaveAndSend();
@@ -316,7 +316,7 @@ export function CampaignForm({ mode, initialData, templates = [] }: CampaignForm
         </button>
 
         <button
-          onClick={handleSendNow}
+          onClick={() => setShowSendConfirm(true)}
           disabled={sending}
           className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-accent/90 disabled:opacity-50"
         >
@@ -324,6 +324,19 @@ export function CampaignForm({ mode, initialData, templates = [] }: CampaignForm
           {sending ? "Sending..." : "Send Now"}
         </button>
       </div>
+
+      <ConfirmDialog
+        open={showSendConfirm}
+        onClose={() => setShowSendConfirm(false)}
+        onConfirm={() => {
+          setShowSendConfirm(false);
+          handleSendNow();
+        }}
+        title="Send Campaign"
+        message="This will send the campaign to all active subscribers. This action cannot be undone."
+        confirmText="Send Now"
+        loading={sending}
+      />
     </div>
   );
 }

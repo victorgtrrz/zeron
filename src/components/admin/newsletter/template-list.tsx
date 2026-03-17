@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Template {
   id: string;
@@ -23,6 +24,7 @@ function formatDate(date: string | null): string {
 export function TemplateList() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   async function fetchTemplates() {
     setLoading(true);
@@ -43,18 +45,19 @@ export function TemplateList() {
     fetchTemplates();
   }, []);
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this template?")) return;
-
+  async function handleDelete() {
+    if (!deleteConfirm) return;
     try {
-      const res = await fetch(`/api/admin/newsletter/templates/${id}`, {
+      const res = await fetch(`/api/admin/newsletter/templates/${deleteConfirm}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        setTemplates((prev) => prev.filter((t) => t.id !== id));
+        setTemplates((prev) => prev.filter((t) => t.id !== deleteConfirm));
       }
     } catch (error) {
       console.error("Failed to delete template:", error);
+    } finally {
+      setDeleteConfirm(null);
     }
   }
 
@@ -112,7 +115,7 @@ export function TemplateList() {
                         <Edit className="h-4 w-4" />
                       </Link>
                       <button
-                        onClick={() => handleDelete(t.id)}
+                        onClick={() => setDeleteConfirm(t.id)}
                         className="rounded-md p-1.5 text-muted transition-colors hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -125,6 +128,16 @@ export function TemplateList() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleDelete}
+        title="Delete Template"
+        message="Are you sure you want to delete this template? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }
