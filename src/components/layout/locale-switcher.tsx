@@ -11,7 +11,7 @@ const locales = [
   { code: "zh-HK" as const, label: "繁中" },
 ];
 
-export function LocaleSwitcher() {
+export function LocaleSwitcher({ align = "right" }: { align?: "left" | "right" }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -43,12 +43,12 @@ export function LocaleSwitcher() {
         aria-label="Switch language"
       >
         <Globe className="h-4 w-4" />
-        <span className="hidden sm:inline">{currentLabel}</span>
+        <span>{currentLabel}</span>
         <ChevronDown className="h-3 w-3" />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 min-w-[100px] animate-scale-in rounded-md border border-border bg-surface py-1 shadow-lg">
+        <div className={`absolute top-full z-50 mt-1 min-w-[100px] animate-scale-in rounded-md border border-border bg-surface py-1 shadow-lg ${align === "left" ? "left-0" : "right-0"}`}>
           {locales.map((locale) => (
             <button
               key={locale.code}

@@ -6,6 +6,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { AuthModalProvider } from "@/lib/auth-modal-context";
 import { AuthModal } from "@/components/auth/auth-modal";
+import { ToastProvider } from "@/components/ui/toast";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -15,8 +16,10 @@ export function Providers({ children }: { children: ReactNode }) {
         <AuthModalProvider>
           <CartProvider>
             <WishlistProvider>
-              {children}
-              <AuthModal />
+              <ToastProvider>
+                {children}
+                <AuthModal />
+              </ToastProvider>
             </WishlistProvider>
           </CartProvider>
         </AuthModalProvider>

@@ -129,7 +129,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* Settings row */}
           <div className="flex items-center gap-2 px-3">
-            <LocaleSwitcher />
+            <LocaleSwitcher align="left" />
             <ThemeToggle />
           </div>
         </div>
