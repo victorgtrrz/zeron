@@ -49,7 +49,11 @@
     "sortNameAz": "Name: A-Z",
     "priceRange": "Price Range",
     "allCategories": "All Categories",
-    "relatedProducts": "You Might Also Like"
+    "relatedProducts": "You Might Also Like",
+    "gender": "Gender",
+    "genderMen": "Men",
+    "genderWomen": "Women",
+    "genderAll": "All"
   },
   "cart": {
     "title": "Shopping Cart",

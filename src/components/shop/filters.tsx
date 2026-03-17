@@ -25,6 +25,9 @@ export function Filters() {
   const [selectedCategory, setSelectedCategory] = useState<string>(
     searchParams.get("category") ?? ""
   );
+  const [selectedGender, setSelectedGender] = useState<string>(
+    searchParams.get("gender") ?? ""
+  );
   const [selectedSizes, setSelectedSizes] = useState<string[]>(
     searchParams.get("sizes")?.split(",").filter(Boolean) ?? []
   );
@@ -42,6 +45,7 @@ export function Filters() {
   // Sync local state when URL changes externally (e.g. back/forward navigation)
   useEffect(() => {
     setSelectedCategory(searchParams.get("category") ?? "");
+    setSelectedGender(searchParams.get("gender") ?? "");
     setSelectedSizes(searchParams.get("sizes")?.split(",").filter(Boolean) ?? []);
     setMinPrice(searchParams.get("minPrice") ?? "");
     setMaxPrice(searchParams.get("maxPrice") ?? "");
@@ -50,17 +54,20 @@ export function Filters() {
   const navigate = useCallback(
     (overrides: {
       category?: string;
+      gender?: string;
       sizes?: string[];
       min?: string;
       max?: string;
     }) => {
       const cat = overrides.category ?? selectedCategory;
+      const gen = overrides.gender ?? selectedGender;
       const sizes = overrides.sizes ?? selectedSizes;
       const min = overrides.min ?? minPrice;
       const max = overrides.max ?? maxPrice;
 
       const params = new URLSearchParams();
       if (cat) params.set("category", cat);
+      if (gen) params.set("gender", gen);
       if (sizes.length > 0) params.set("sizes", sizes.join(","));
       if (min) params.set("minPrice", min);
       if (max) params.set("maxPrice", max);
@@ -73,13 +80,19 @@ export function Filters() {
         router.push(`/shop${qs ? `?${qs}` : ""}`);
       });
     },
-    [selectedCategory, selectedSizes, minPrice, maxPrice, searchParams, router, startTransition]
+    [selectedCategory, selectedGender, selectedSizes, minPrice, maxPrice, searchParams, router, startTransition]
   );
 
   function selectCategory(slug: string) {
     if (selectedCategory === slug) return;
     setSelectedCategory(slug);
     navigate({ category: slug });
+  }
+
+  function selectGender(value: string) {
+    const next = selectedGender === value ? "" : value;
+    setSelectedGender(next);
+    navigate({ gender: next });
   }
 
   function toggleSize(size: string) {
@@ -96,6 +109,7 @@ export function Filters() {
 
   function clearFilters() {
     setSelectedCategory("");
+    setSelectedGender("");
     setSelectedSizes([]);
     setMinPrice("");
     setMaxPrice("");
@@ -109,6 +123,7 @@ export function Filters() {
 
   const hasFilters =
     selectedCategory !== "" ||
+    selectedGender !== "" ||
     selectedSizes.length > 0 ||
     minPrice !== "" ||
     maxPrice !== "";
@@ -148,6 +163,31 @@ export function Filters() {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Gender */}
+      <div>
+        <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-accent">
+          {t("gender")}
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {([
+            { value: "men", label: t("genderMen") },
+            { value: "women", label: t("genderWomen") },
+          ] as const).map(({ value, label }) => (
+            <button
+              key={value}
+              onClick={() => selectGender(value)}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                selectedGender === value
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border text-muted hover:border-accent hover:text-accent"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 

@@ -74,6 +74,7 @@ export async function PUT(
       images,
       sizes,
       stock,
+      gender,
       status,
       tags,
     } = body;
@@ -104,6 +105,7 @@ export async function PUT(
     if (images !== undefined) updateData.images = images;
     if (sizes !== undefined) updateData.sizes = sizes;
     if (stock !== undefined) updateData.stock = stock;
+    if (gender !== undefined) updateData.gender = gender;
     if (status !== undefined) updateData.status = status;
     if (tags !== undefined) updateData.tags = tags;
 
@@ -157,15 +159,12 @@ export async function DELETE(
       );
     }
 
-    // Soft delete - set status to archived
-    await adminDb.collection("products").doc(id).update({
-      status: "archived",
-      updatedAt: FieldValue.serverTimestamp(),
-    });
+    // Hard delete the document (images in Storage are left as orphans)
+    await adminDb.collection("products").doc(id).delete();
 
-    return NextResponse.json({ success: true, message: "Product archived" });
+    return NextResponse.json({ success: true, message: "Product deleted" });
   } catch (error) {
-    console.error("Error archiving product:", error);
+    console.error("Error deleting product:", error);
     if (
       error instanceof Error &&
       (error.message.includes("admin") || error.message.includes("session"))
@@ -173,7 +172,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.json(
-      { error: "Failed to archive product" },
+      { error: "Failed to delete product" },
       { status: 500 }
     );
   }

@@ -54,6 +54,7 @@ function docToType<T>(snapshot: { id: string; data: () => Record<string, unknown
 export interface ProductFilters {
   categoryId?: string;
   status?: string;
+  gender?: "men" | "women" | "unisex";
   sizes?: string[];
   minPrice?: number;
   maxPrice?: number;
@@ -84,6 +85,10 @@ export async function getProducts(filters: ProductFilters = {}): Promise<Product
 
   if (filters.categoryId) {
     constraints.push(where("categoryId", "==", filters.categoryId));
+  }
+
+  if (filters.gender && filters.gender !== "unisex") {
+    constraints.push(where("gender", "in", [filters.gender, "unisex"]));
   }
 
   // Sort

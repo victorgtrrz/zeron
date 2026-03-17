@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
       images,
       sizes,
       stock,
+      gender,
       status,
       tags,
     } = body;
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
       images: images || [],
       sizes: sizes || [],
       stock: stock || {},
+      gender: gender || "unisex",
       status: status || "draft",
       tags: tags || [],
       createdAt: FieldValue.serverTimestamp(),

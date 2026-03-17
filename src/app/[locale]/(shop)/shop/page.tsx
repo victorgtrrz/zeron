@@ -32,6 +32,7 @@ export default async function ShopPage({
 
   const sp = await searchParams;
   const categorySlug = typeof sp.category === "string" ? sp.category : undefined;
+  const genderParam = typeof sp.gender === "string" ? sp.gender : undefined;
   const sizesFilter = typeof sp.sizes === "string" ? sp.sizes.split(",").filter(Boolean) : undefined;
   const minPriceStr = typeof sp.minPrice === "string" ? sp.minPrice : undefined;
   const maxPriceStr = typeof sp.maxPrice === "string" ? sp.maxPrice : undefined;
@@ -47,6 +48,10 @@ export default async function ShopPage({
     if (cat) {
       filters.categoryId = cat.id;
     }
+  }
+
+  if (genderParam === "men" || genderParam === "women") {
+    filters.gender = genderParam;
   }
 
   if (sortParam === "price-asc" || sortParam === "price-desc" || sortParam === "name-asc" || sortParam === "newest") {

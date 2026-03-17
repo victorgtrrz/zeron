@@ -3,7 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ChevronLeft, ChevronRight, Archive, Pencil } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Trash2, Pencil } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
+import { deleteImage } from "@/lib/firebase/storage";
 import type { Product, Category } from "@/types";
 
 function formatCents(cents: number): string {
@@ -16,8 +19,6 @@ function statusBadgeClass(status: string): string {
       return "bg-success/20 text-success";
     case "draft":
       return "bg-warning/20 text-warning";
-    case "archived":
-      return "bg-muted/20 text-muted";
     default:
       return "bg-muted/20 text-muted";
   }
@@ -33,6 +34,9 @@ export function ProductTable() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -77,20 +81,34 @@ export function ProductTable() {
     fetchCategories();
   }, []);
 
-  async function handleArchive(id: string) {
-    if (!confirm("Archive this product?")) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
 
     try {
-      const res = await fetch(`/api/admin/products/${id}`, {
+      // Find the product to get its images
+      const product = products.find((p) => p.id === deleteTarget);
+
+      const res = await fetch(`/api/admin/products/${deleteTarget}`, {
         method: "DELETE",
       });
       if (res.ok) {
+        // Delete images from Storage (best-effort, after Firestore delete succeeds)
+        if (product?.images?.length) {
+          await Promise.allSettled(
+            product.images.map((url) => deleteImage(url).catch(() => {}))
+          );
+        }
+        setDeleteTarget(null);
         fetchProducts();
+        toast("Product deleted successfully", "success");
       } else {
-        alert("Failed to archive product");
+        toast("Failed to delete product");
       }
     } catch {
-      alert("Failed to archive product");
+      toast("Failed to delete product");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -147,7 +165,6 @@ export function ProductTable() {
           <option value="">All statuses</option>
           <option value="active">Active</option>
           <option value="draft">Draft</option>
-          <option value="archived">Archived</option>
         </select>
       </div>
 
@@ -172,6 +189,9 @@ export function ProductTable() {
                 Stock
               </th>
               <th className="px-6 py-3 text-xs font-medium uppercase text-muted">
+                Gender
+              </th>
+              <th className="px-6 py-3 text-xs font-medium uppercase text-muted">
                 Status
               </th>
               <th className="px-6 py-3 text-xs font-medium uppercase text-muted">
@@ -182,13 +202,13 @@ export function ProductTable() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-sm text-muted">
+                <td colSpan={8} className="px-6 py-8 text-center text-sm text-muted">
                   Loading...
                 </td>
               </tr>
             ) : products.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-sm text-muted">
+                <td colSpan={8} className="px-6 py-8 text-center text-sm text-muted">
                   No products found
                 </td>
               </tr>
@@ -230,6 +250,9 @@ export function ProductTable() {
                     <td className="px-6 py-3 text-sm text-muted">
                       {totalStock(product)}
                     </td>
+                    <td className="px-6 py-3 text-sm capitalize text-muted">
+                      {product.gender || "unisex"}
+                    </td>
                     <td className="px-6 py-3">
                       <span
                         className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(
@@ -248,15 +271,13 @@ export function ProductTable() {
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Link>
-                        {product.status !== "archived" && (
-                          <button
-                            onClick={() => handleArchive(product.id)}
-                            className="rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
-                            title="Archive"
-                          >
-                            <Archive className="h-3.5 w-3.5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => setDeleteTarget(product.id)}
+                          className="rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -297,6 +318,18 @@ export function ProductTable() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Product"
+        message="Are you sure you want to permanently delete this product? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        loading={deleting}
+      />
     </div>
   );
 }

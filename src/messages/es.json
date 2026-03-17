@@ -49,7 +49,11 @@
     "sortNameAz": "Nombre: A-Z",
     "priceRange": "Rango de Precio",
     "allCategories": "Todas las Categorías",
-    "relatedProducts": "También Te Puede Gustar"
+    "relatedProducts": "También Te Puede Gustar",
+    "gender": "Género",
+    "genderMen": "Hombre",
+    "genderWomen": "Mujer",
+    "genderAll": "Todos"
   },
   "cart": {
     "title": "Carrito de Compras",

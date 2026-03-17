@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { TranslationEditor } from "./translation-editor";
 import { ImageUpload } from "./image-upload";
 import { Save, Loader2 } from "lucide-react";
-import type { Product, TranslatedField, Category } from "@/types";
+import { useToast } from "@/components/ui/toast";
+import type { Product, TranslatedField, Category, Gender } from "@/types";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -29,12 +30,16 @@ export function ProductForm({ initialData, onSave }: ProductFormProps) {
     initialData?.stock || {}
   );
   const [tags, setTags] = useState(initialData?.tags?.join(", ") || "");
-  const [status, setStatus] = useState<"active" | "draft" | "archived">(
+  const [gender, setGender] = useState<Gender>(
+    initialData?.gender || "unisex"
+  );
+  const [status, setStatus] = useState<"active" | "draft">(
     initialData?.status || "draft"
   );
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [categories, setCategories] = useState<Category[]>([]);
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchCategories() {
@@ -72,7 +77,7 @@ export function ProductForm({ initialData, onSave }: ProductFormProps) {
     e.preventDefault();
 
     if (!name.en.trim()) {
-      alert("English name is required");
+      toast("English name is required", "warning");
       return;
     }
 
@@ -93,12 +98,13 @@ export function ProductForm({ initialData, onSave }: ProductFormProps) {
         sizes,
         stock,
         tags: tagArray,
+        gender,
         status,
         images,
       });
     } catch (error) {
       console.error("Save error:", error);
-      alert("Failed to save product");
+      toast("Failed to save product");
     } finally {
       setSaving(false);
     }
@@ -137,6 +143,27 @@ export function ProductForm({ initialData, onSave }: ProductFormProps) {
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Gender */}
+      <div>
+        <label className="mb-2 block text-sm text-muted">Gender</label>
+        <div className="flex flex-wrap gap-2">
+          {(["men", "women", "unisex"] as const).map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => setGender(g)}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-colors ${
+                gender === g
+                  ? "border-accent bg-accent text-background"
+                  : "border-border bg-background text-muted hover:border-muted"
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Base Price */}
@@ -240,13 +267,12 @@ export function ProductForm({ initialData, onSave }: ProductFormProps) {
         <select
           value={status}
           onChange={(e) =>
-            setStatus(e.target.value as "active" | "draft" | "archived")
+            setStatus(e.target.value as "active" | "draft")
           }
           className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-accent focus:border-brand focus:outline-none"
         >
           <option value="draft">Draft</option>
           <option value="active">Active</option>
-          <option value="archived">Archived</option>
         </select>
       </div>
 

@@ -25,6 +25,8 @@ export interface User {
   updatedAt: Date;
 }
 
+export type Gender = "men" | "women" | "unisex";
+
 export interface Product {
   id: string;
   name: TranslatedField;
@@ -35,7 +37,8 @@ export interface Product {
   images: string[];
   sizes: string[];
   stock: Record<string, number>;
-  status: "active" | "draft" | "archived";
+  status: "active" | "draft";
+  gender: Gender;
   tags: string[];
   createdAt: Date;
   updatedAt: Date;

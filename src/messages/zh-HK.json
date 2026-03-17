@@ -49,7 +49,11 @@
     "sortNameAz": "名稱：A-Z",
     "priceRange": "價格範圍",
     "allCategories": "所有分類",
-    "relatedProducts": "你可能也喜歡"
+    "relatedProducts": "你可能也喜歡",
+    "gender": "性別",
+    "genderMen": "男裝",
+    "genderWomen": "女裝",
+    "genderAll": "全部"
   },
   "cart": {
     "title": "購物車",
