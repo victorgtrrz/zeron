@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Heart, ShoppingBag, Check } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 import { useTranslations } from "next-intl";
 import type { Product, Locale } from "@/types";
 
@@ -14,10 +15,10 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, locale }: ProductCardProps) {
-  const [isWished, setIsWished] = useState(false);
   const [showSizes, setShowSizes] = useState(false);
   const [added, setAdded] = useState(false);
   const { addItem, openCart } = useCart();
+  const { isWished, toggle: toggleWishlist } = useWishlist();
   const t = useTranslations("common");
   const tProduct = useTranslations("product");
 
@@ -45,14 +46,14 @@ export function ProductCard({ product, locale }: ProductCardProps) {
       <button
         onClick={(e) => {
           e.preventDefault();
-          setIsWished((prev) => !prev);
+          toggleWishlist(product.id);
         }}
         className="absolute right-3 top-3 z-10 rounded-full bg-background/60 p-2 backdrop-blur-sm transition-colors hover:bg-background/80"
         aria-label="Toggle wishlist"
       >
         <Heart
           className={`h-4 w-4 transition-colors ${
-            isWished ? "fill-red-500 text-red-500" : "text-accent"
+            isWished(product.id) ? "fill-red-500 text-red-500" : "text-accent"
           }`}
         />
       </button>
