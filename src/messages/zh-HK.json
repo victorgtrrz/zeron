@@ -190,7 +190,8 @@
     "placeholder": "你的電郵",
     "submit": "訂閱",
     "success": "歡迎加入 Team ZERON！",
-    "disclaimer": "沒有垃圾郵件。隨時取消。"
+    "disclaimer": "沒有垃圾郵件。隨時取消。",
+    "error": "出了點問題，請再試一次。"
   },
   "notFound": {
     "code": "404",

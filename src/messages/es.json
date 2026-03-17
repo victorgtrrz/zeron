@@ -190,7 +190,8 @@
     "placeholder": "tu@email.com",
     "submit": "Suscribirse",
     "success": "¡Bienvenido al Team ZERON!",
-    "disclaimer": "Sin spam. Cancela cuando quieras."
+    "disclaimer": "Sin spam. Cancela cuando quieras.",
+    "error": "Algo salió mal. Inténtalo de nuevo."
   },
   "notFound": {
     "code": "404",

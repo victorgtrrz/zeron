@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, CheckCircle } from "lucide-react";
 
 export function Newsletter() {
   const t = useTranslations("newsletter");
+  const locale = useLocale();
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -29,11 +32,29 @@ export function Newsletter() {
     return () => observer.disconnect();
   }, []);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
-    setSubmitted(true);
-    setEmail("");
+    if (!email || submitting) return;
+
+    setError(false);
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, locale }),
+      });
+
+      if (!res.ok) throw new Error("Subscribe failed");
+
+      setSubmitted(true);
+      setEmail("");
+    } catch {
+      setError(true);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -107,12 +128,18 @@ export function Newsletter() {
               />
               <button
                 type="submit"
-                className="group flex items-center justify-center gap-2 border border-highlight bg-highlight/10 px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent transition-all duration-300 hover:bg-highlight/20"
+                disabled={submitting}
+                className={`group flex items-center justify-center gap-2 border border-highlight bg-highlight/10 px-8 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-accent transition-all duration-300 hover:bg-highlight/20 ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {t("submit")}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
             </form>
+          )}
+          {error && (
+            <p className="mt-3 text-sm text-red-500">
+              {t("error")}
+            </p>
           )}
         </div>
 
