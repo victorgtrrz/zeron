@@ -130,11 +130,11 @@ export default function WishlistPage() {
                 <p className="mb-3 font-bold text-accent">{price}</p>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <button
                     onClick={() => handleRemove(product.id)}
                     disabled={removingId === product.id}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-surface py-2 px-4 text-sm text-accent transition-colors hover:bg-border disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface py-2.5 px-4 text-sm text-accent transition-colors hover:bg-border disabled:opacity-50"
                   >
                     {removingId === product.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -145,7 +145,7 @@ export default function WishlistPage() {
                       </>
                     )}
                   </button>
-                  <button className="flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-bold text-background transition-opacity hover:opacity-90">
+                  <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-background transition-opacity hover:opacity-90">
                     <ShoppingCart className="h-4 w-4" />
                     {tCommon("addToCart")}
                   </button>
