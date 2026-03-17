@@ -135,3 +135,11 @@ export interface ChatbotRateLimit {
   count: number;
   windowStart: Date;
 }
+
+export interface NewsletterSubscriber {
+  email: string;
+  locale: Locale;
+  subscribedAt: Date;
+  unsubscribedAt: Date | null;
+  source: string;
+}
