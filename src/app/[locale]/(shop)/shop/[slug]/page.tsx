@@ -143,7 +143,12 @@ export default async function ProductDetailPage({
 
   return (
     <section className="mx-auto min-h-screen max-w-7xl px-4 py-10">
-      <ProductJsonLd product={product} locale={locale} />
+      <ProductJsonLd
+        product={product}
+        locale={locale}
+        reviewStats={product.reviewStats}
+        reviews={reviews}
+      />
 
       <div className="grid gap-10 md:grid-cols-2">
         {/* Left — Gallery */}

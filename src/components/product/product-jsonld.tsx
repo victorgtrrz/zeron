@@ -1,11 +1,26 @@
-import type { Product } from "@/types";
+import type { Product, ReviewStats } from "@/types";
+import { getPartialName } from "@/lib/review-utils";
+
+interface ReviewData {
+  displayName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
 
 interface ProductJsonLdProps {
   product: Product;
   locale: string;
+  reviewStats?: ReviewStats;
+  reviews?: ReviewData[];
 }
 
-export function ProductJsonLd({ product, locale }: ProductJsonLdProps) {
+export function ProductJsonLd({
+  product,
+  locale,
+  reviewStats,
+  reviews,
+}: ProductJsonLdProps) {
   const name =
     product.name[locale as keyof typeof product.name] || product.name.en || "";
   const description =
@@ -14,7 +29,7 @@ export function ProductJsonLd({ product, locale }: ProductJsonLdProps) {
     "";
   const totalStock = Object.values(product.stock).reduce((sum, s) => sum + s, 0);
 
-  const jsonLd = {
+  const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name,
@@ -32,9 +47,34 @@ export function ProductJsonLd({ product, locale }: ProductJsonLdProps) {
         totalStock > 0
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
-      url: typeof window !== "undefined" ? window.location.href : undefined,
     },
   };
+
+  if (reviewStats && reviewStats.totalReviews > 0) {
+    jsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: reviewStats.averageRating,
+      reviewCount: reviewStats.totalReviews,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
+  if (reviews && reviews.length > 0) {
+    jsonLd.review = reviews.map((r) => ({
+      "@type": "Review",
+      author: {
+        "@type": "Person",
+        name: getPartialName(r.displayName),
+      },
+      datePublished: r.createdAt.split("T")[0],
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+      },
+      reviewBody: r.comment,
+    }));
+  }
 
   return (
     <script
