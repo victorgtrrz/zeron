@@ -17,6 +17,7 @@ import {
   Settings,
   ArrowLeft,
   MoreHorizontal,
+  Mail,
 } from "lucide-react";
 
 const navLinks = [
@@ -26,6 +27,7 @@ const navLinks = [
   { href: "/zr-ops/orders", label: "Orders", icon: ShoppingCart },
   { href: "/zr-ops/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/zr-ops/promotions", label: "Promotions", icon: Percent },
+  { href: "/zr-ops/newsletter", label: "Newsletter", icon: Mail },
   { href: "/zr-ops/chatbot-kb", label: "Chatbot KB", icon: MessageSquare },
   { href: "/zr-ops/settings", label: "Settings", icon: Settings },
 ];
