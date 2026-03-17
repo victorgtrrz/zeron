@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 import { checkRateLimit } from "@/lib/chatbot-rate-limit";
-import { invokeModel } from "@/lib/bedrock";
+import { invokeModel } from "@/lib/gemini";
 import type { ChatbotKBEntry, Order } from "@/types";
 
 export async function POST(request: NextRequest) {
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
           }
           controller.close();
         } catch (error) {
-          console.error("Bedrock streaming error:", error);
+          console.error("Gemini streaming error:", error);
           controller.enqueue(
             encoder.encode("Sorry, I encountered an error. Please try again.")
           );
