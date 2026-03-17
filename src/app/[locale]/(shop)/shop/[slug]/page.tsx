@@ -7,6 +7,10 @@ import { ProductJsonLd } from "@/components/product/product-jsonld";
 import { RelatedProducts } from "@/components/product/related-products";
 import { routing } from "@/i18n/routing";
 import { MarkdownContent } from "@/components/product/markdown-content";
+import { ReviewSummary } from "@/components/product/review-summary";
+import { ReviewSection } from "@/components/product/review-section";
+import { adminDb, adminAuth } from "@/lib/firebase/admin";
+import { cookies } from "next/headers";
 import type { Locale } from "@/types";
 import type { Metadata } from "next";
 
@@ -67,6 +71,71 @@ export default async function ProductDetailPage({
   });
   const relatedProducts = categoryProducts.filter((p) => p.id !== product.id).slice(0, 8);
 
+  // Fetch approved reviews for this product (first page)
+  const reviewsSnap = await adminDb
+    .collection("reviews")
+    .where("productId", "==", product.id)
+    .where("status", "==", "approved")
+    .orderBy("createdAt", "desc")
+    .limit(10)
+    .get();
+
+  const reviews = reviewsSnap.docs.map((doc) => {
+    const d = doc.data();
+    return {
+      id: doc.id,
+      displayName: d.displayName,
+      rating: d.rating,
+      comment: d.comment,
+      verifiedPurchase: d.verifiedPurchase,
+      createdAt: d.createdAt?.toDate?.()?.toISOString() ?? new Date().toISOString(),
+    };
+  });
+
+  const totalApprovedReviews = product.reviewStats?.totalReviews ?? 0;
+
+  // Determine review eligibility
+  let eligibility: "eligible" | "login_required" | "purchase_required" | "already_reviewed" = "login_required";
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("__session")?.value;
+    if (sessionCookie) {
+      const decodedToken = await adminAuth.verifyIdToken(sessionCookie);
+      const userId = decodedToken.uid;
+
+      // Check if already reviewed
+      const existingReview = await adminDb
+        .collection("reviews")
+        .where("productId", "==", product.id)
+        .where("userId", "==", userId)
+        .limit(1)
+        .get();
+
+      if (!existingReview.empty) {
+        eligibility = "already_reviewed";
+      } else {
+        // Check if has a verified purchase
+        const ordersSnap = await adminDb
+          .collection("orders")
+          .where("userId", "==", userId)
+          .where("paymentStatus", "==", "paid")
+          .where("fulfillmentStatus", "==", "delivered")
+          .get();
+
+        const hasPurchased = ordersSnap.docs.some((doc) => {
+          const items = doc.data().items || [];
+          return items.some(
+            (item: { productId: string }) => item.productId === product.id
+          );
+        });
+
+        eligibility = hasPurchased ? "eligible" : "purchase_required";
+      }
+    }
+  } catch {
+    // Not logged in or invalid token — keep "login_required"
+  }
+
   const name = product.name[locale as Locale] || product.name.en || "";
   const description =
     product.description[locale as Locale] || product.description.en || "";
@@ -87,6 +156,12 @@ export default async function ProductDetailPage({
               {name}
             </h1>
             <p className="mt-2 text-2xl font-bold text-accent">{price}</p>
+            <a href="#reviews" className="transition-opacity hover:opacity-80">
+              <ReviewSummary
+                averageRating={product.reviewStats?.averageRating ?? 0}
+                totalReviews={totalApprovedReviews}
+              />
+            </a>
           </div>
 
           <MarkdownContent content={description} />
@@ -95,6 +170,14 @@ export default async function ProductDetailPage({
           <ProductDetailClient product={product} />
         </div>
       </div>
+
+      {/* Reviews Section */}
+      <ReviewSection
+        productId={product.id}
+        reviews={reviews}
+        totalReviews={totalApprovedReviews}
+        eligibility={eligibility}
+      />
 
       {/* Related products from same category */}
       <RelatedProducts products={relatedProducts} locale={locale as Locale} />
