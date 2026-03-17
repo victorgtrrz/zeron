@@ -40,6 +40,25 @@ export interface Product {
   status: "active" | "draft";
   gender: Gender;
   tags: string[];
+  reviewStats?: ReviewStats;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ReviewStats {
+  averageRating: number;
+  totalReviews: number;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  displayName: string;
+  rating: number;
+  comment: string;
+  verifiedPurchase: boolean;
+  status: "pending" | "approved" | "rejected";
   createdAt: Date;
   updatedAt: Date;
 }
