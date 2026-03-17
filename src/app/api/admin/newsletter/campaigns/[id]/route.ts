@@ -60,9 +60,10 @@ export async function PUT(
       return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
     }
 
-    if (snap.data()!.status !== "draft") {
+    const status = snap.data()!.status;
+    if (status !== "draft" && status !== "scheduled") {
       return NextResponse.json(
-        { error: "Only draft campaigns can be edited" },
+        { error: "Only draft or scheduled campaigns can be edited" },
         { status: 400 }
       );
     }

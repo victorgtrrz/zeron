@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Edit, Send } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Edit, XCircle } from "lucide-react";
 import { HtmlPreview } from "@/components/admin/newsletter/html-preview";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface CampaignData {
   id: string;
@@ -45,8 +47,11 @@ function statusBadgeClass(status: string): string {
 }
 
 export function CampaignDetail({ campaignId }: { campaignId: string }) {
+  const router = useRouter();
   const [campaign, setCampaign] = useState<CampaignData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -84,7 +89,7 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
           <h2 className="text-3xl font-bold font-heading">{campaign.subject}</h2>
         </div>
         <div className="flex gap-2">
-          {campaign.status === "draft" && (
+          {(campaign.status === "draft" || campaign.status === "scheduled") && (
             <Link
               href={`/zr-ops/newsletter/campaigns/${campaignId}/edit`}
               className="flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-background"
@@ -92,6 +97,15 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
               <Edit className="h-4 w-4" />
               Edit
             </Link>
+          )}
+          {campaign.status === "scheduled" && (
+            <button
+              onClick={() => setShowCancelConfirm(true)}
+              className="flex items-center gap-2 rounded-lg border border-destructive/50 px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <XCircle className="h-4 w-4" />
+              Cancel Schedule
+            </button>
           )}
         </div>
       </div>
@@ -142,6 +156,33 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
         <h3 className="mb-3 text-sm font-medium text-muted">Email Preview</h3>
         <HtmlPreview html={campaign.body} className="h-[600px]" />
       </div>
+
+      <ConfirmDialog
+        open={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={async () => {
+          setCancelling(true);
+          try {
+            const res = await fetch(
+              `/api/admin/newsletter/campaigns/${campaignId}/cancel`,
+              { method: "POST" }
+            );
+            if (res.ok) {
+              setCampaign((prev) => prev ? { ...prev, status: "draft", scheduledAt: null } : prev);
+            }
+          } catch (error) {
+            console.error("Failed to cancel campaign:", error);
+          } finally {
+            setCancelling(false);
+            setShowCancelConfirm(false);
+          }
+        }}
+        title="Cancel Scheduled Campaign"
+        message="This will revert the campaign to draft status. You can reschedule or send it later."
+        confirmText="Cancel Schedule"
+        variant="destructive"
+        loading={cancelling}
+      />
     </div>
   );
 }
