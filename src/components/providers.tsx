@@ -3,6 +3,7 @@
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartProvider } from "@/lib/cart-context";
+import { WishlistProvider } from "@/lib/wishlist-context";
 import { AuthModalProvider } from "@/lib/auth-modal-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import type { ReactNode } from "react";
@@ -13,8 +14,10 @@ export function Providers({ children }: { children: ReactNode }) {
       <AuthProvider>
         <AuthModalProvider>
           <CartProvider>
-            {children}
-            <AuthModal />
+            <WishlistProvider>
+              {children}
+              <AuthModal />
+            </WishlistProvider>
           </CartProvider>
         </AuthModalProvider>
       </AuthProvider>
