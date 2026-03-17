@@ -93,65 +93,74 @@ export function ProductCard({ product, locale }: ProductCardProps) {
           <p className="mt-1 text-xs font-bold text-accent sm:text-sm">{price}</p>
         </Link>
 
-        {/* Add to cart button */}
-        {availableSizes.length > 0 && (
-          <div className="relative mt-3">
-            <button
-              onClick={() => setShowSizes((prev) => !prev)}
-              className={`flex w-full items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 sm:gap-2 sm:py-2 sm:text-xs ${
-                added
-                  ? "border-success bg-success/10 text-success"
-                  : "border-border text-muted hover:border-highlight hover:text-highlight"
-              }`}
-            >
-              {added ? (
+        {/* Add to cart / Out of stock button */}
+        <div className="relative mt-3">
+          {availableSizes.length > 0 ? (
+            <>
+              <button
+                onClick={() => setShowSizes((prev) => !prev)}
+                className={`flex w-full items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 sm:gap-2 sm:py-2 sm:text-xs ${
+                  added
+                    ? "border-success bg-success/10 text-success"
+                    : "border-border text-muted hover:border-highlight hover:text-highlight"
+                }`}
+              >
+                {added ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" />
+                    {tProduct("addedToCart")}
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    {t("addToCart")}
+                  </>
+                )}
+              </button>
+
+              {/* Size picker overlay */}
+              {showSizes && (
                 <>
-                  <Check className="h-3.5 w-3.5" />
-                  {tProduct("addedToCart")}
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="h-3.5 w-3.5" />
-                  {t("addToCart")}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowSizes(false)}
+                  />
+                  <div className="absolute bottom-full left-0 right-0 z-20 mb-1 animate-scale-in rounded-lg border border-border bg-surface p-3 shadow-xl">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                      {tProduct("selectSize")}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {product.sizes.map((size) => {
+                        const inStock = (product.stock[size] ?? 0) > 0;
+                        return (
+                          <button
+                            key={size}
+                            disabled={!inStock}
+                            onClick={() => handleAddToCart(size)}
+                            className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+                              inStock
+                                ? "border-border text-accent hover:border-highlight hover:text-highlight"
+                                : "border-border/50 text-muted/40 line-through"
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </>
               )}
+            </>
+          ) : (
+            <button
+              disabled
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-border py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted opacity-50 cursor-not-allowed sm:gap-2 sm:py-2 sm:text-xs"
+            >
+              {t("outOfStock")}
             </button>
-
-            {/* Size picker overlay */}
-            {showSizes && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowSizes(false)}
-                />
-                <div className="absolute bottom-full left-0 right-0 z-20 mb-1 animate-scale-in rounded-lg border border-border bg-surface p-3 shadow-xl">
-                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
-                    {tProduct("selectSize")}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {product.sizes.map((size) => {
-                      const inStock = (product.stock[size] ?? 0) > 0;
-                      return (
-                        <button
-                          key={size}
-                          disabled={!inStock}
-                          onClick={() => handleAddToCart(size)}
-                          className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
-                            inStock
-                              ? "border-border text-accent hover:border-highlight hover:text-highlight"
-                              : "border-border/50 text-muted/40 line-through"
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
