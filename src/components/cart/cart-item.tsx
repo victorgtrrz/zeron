@@ -1,8 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Plus, Minus, X } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { getProduct } from "@/lib/firebase/firestore";
 import type { CartItem as CartItemType } from "@/types";
 
 interface CartItemProps {
@@ -11,6 +13,15 @@ interface CartItemProps {
 
 export function CartItemRow({ item }: CartItemProps) {
   const { updateQuantity, removeItem } = useCart();
+  const [maxStock, setMaxStock] = useState<number>(Infinity);
+
+  useEffect(() => {
+    getProduct(item.productId).then((product) => {
+      if (product) {
+        setMaxStock(product.stock[item.size] ?? 0);
+      }
+    });
+  }, [item.productId, item.size]);
 
   const lineTotal = item.unitPrice * item.quantity;
 
@@ -70,7 +81,8 @@ export function CartItemRow({ item }: CartItemProps) {
               onClick={() =>
                 updateQuantity(item.productId, item.size, item.quantity + 1)
               }
-              className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface text-accent transition-colors hover:bg-background"
+              disabled={item.quantity >= maxStock}
+              className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-surface text-accent transition-colors hover:bg-background disabled:opacity-40"
               aria-label="Increase quantity"
             >
               <Plus className="h-3 w-3" />

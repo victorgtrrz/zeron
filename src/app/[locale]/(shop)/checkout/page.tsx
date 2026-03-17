@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
+  const [addressRefreshKey, setAddressRefreshKey] = useState(0);
 
   // Redirect to login if not authed
   useEffect(() => {
@@ -64,14 +65,12 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleNewAddress = async (
-    address: Address,
-    saveToProfile: boolean
-  ) => {
+  const handleNewAddress = async (address: Address) => {
     setSelectedAddress(address);
     setUseNewAddress(false);
 
-    if (saveToProfile && user?.uid) {
+    // Always save new addresses to profile
+    if (user?.uid) {
       try {
         const db = getClientDb();
         await updateDoc(doc(db, "users", user.uid), {
@@ -81,6 +80,8 @@ export default function CheckoutPage() {
           }),
           updatedAt: Timestamp.now(),
         });
+        // Refresh saved addresses list so the new one shows up
+        setAddressRefreshKey((k) => k + 1);
       } catch (err) {
         console.error("Failed to save address:", err);
       }
@@ -155,7 +156,7 @@ export default function CheckoutPage() {
         {/* Address section */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-surface border border-border rounded-xl p-6">
-            <SavedAddresses onSelect={handleAddressSelect} />
+            <SavedAddresses onSelect={handleAddressSelect} refreshKey={addressRefreshKey} />
 
             {(useNewAddress || !selectedAddress) && (
               <div className="mt-6">

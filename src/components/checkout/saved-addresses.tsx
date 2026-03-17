@@ -10,9 +10,10 @@ import type { Address } from "@/types";
 
 interface SavedAddressesProps {
   onSelect: (address: Address | null) => void;
+  refreshKey?: number;
 }
 
-export function SavedAddresses({ onSelect }: SavedAddressesProps) {
+export function SavedAddresses({ onSelect, refreshKey = 0 }: SavedAddressesProps) {
   const t = useTranslations("checkout");
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -51,7 +52,7 @@ export function SavedAddresses({ onSelect }: SavedAddressesProps) {
 
     fetchAddresses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
+  }, [user?.uid, refreshKey]);
 
   const handleSelect = (index: number) => {
     setSelectedIndex(index);

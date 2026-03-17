@@ -40,7 +40,7 @@ const COUNTRIES = [
 ];
 
 interface AddressFormProps {
-  onSubmit: (address: Address, saveToProfile: boolean) => void;
+  onSubmit: (address: Address) => void;
   initialAddress?: Partial<Address>;
 }
 
@@ -58,7 +58,6 @@ export function AddressForm({ onSubmit, initialAddress }: AddressFormProps) {
     initialAddress?.country ?? "United States"
   );
   const [zip, setZip] = useState(initialAddress?.zip ?? "");
-  const [saveToProfile, setSaveToProfile] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -80,18 +79,15 @@ export function AddressForm({ onSubmit, initialAddress }: AddressFormProps) {
     }
 
     setErrors({});
-    onSubmit(
-      {
-        recipientName: recipientName.trim(),
-        phone: phone.trim(),
-        street: street.trim(),
-        city: city.trim(),
-        state: state.trim(),
-        country: country.trim(),
-        zip: zip.trim(),
-      },
-      saveToProfile
-    );
+    onSubmit({
+      recipientName: recipientName.trim(),
+      phone: phone.trim(),
+      street: street.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      country: country.trim(),
+      zip: zip.trim(),
+    });
   };
 
   const inputClass = (field: string) =>
@@ -205,16 +201,6 @@ export function AddressForm({ onSubmit, initialAddress }: AddressFormProps) {
           />
         </div>
       </div>
-
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={saveToProfile}
-          onChange={(e) => setSaveToProfile(e.target.checked)}
-          className="h-4 w-4 rounded border-border bg-surface text-brand focus:ring-brand"
-        />
-        <span className="text-sm text-muted">{t("saveAddress")}</span>
-      </label>
 
       <button
         type="submit"
