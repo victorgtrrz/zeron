@@ -3,6 +3,12 @@
 **Date:** 2026-03-17
 **Status:** Approved
 
+### Nota sobre implementación
+Este spec cubre 4 funcionalidades independientes. La implementación se dividirá en planes separados:
+- **Plan A**: Wishlist persistence + Card height fix (pequeños, se agrupan)
+- **Plan B**: Newsletter Fase 1 — Suscriptores + admin
+- **Plan C**: Newsletter Fases 2-3 — Campañas + plantillas
+
 ---
 
 ## 1. Wishlist — Persistencia con Hook + Contexto
@@ -11,7 +17,7 @@
 Los botones de corazón en las cards de `/shop` y en la página de detalle usan `useState(false)` local. Al refrescar, el estado se pierde. Las funciones de Firestore (`getWishlist`, `toggleWishlistItem`) ya existen pero no están conectadas a la UI.
 
 ### Solución
-Crear un `WishlistContext` + `useWishlist` hook, siguiendo el mismo patrón que `CartContext`/`useCart`.
+Crear un `WishlistContext` + `useWishlist` hook. A diferencia de `CartContext` (que usa `onSnapshot` para sync en tiempo real), la wishlist usará una carga única al montar (`getWishlist`) ya que no requiere sincronización multi-pestaña.
 
 ### Archivos nuevos
 - `src/lib/wishlist-context.tsx` — Provider que mantiene un `Set<string>` de product IDs
@@ -21,7 +27,7 @@ Crear un `WishlistContext` + `useWishlist` hook, siguiendo el mismo patrón que 
 1. `WishlistProvider` se monta en el layout raíz (`[locale]/layout.tsx`), al mismo nivel que `CartProvider`
 2. Si hay usuario autenticado → llama `getWishlist(user.uid)` y carga los IDs en un `Set`
 3. Si no hay usuario → `wishlistIds` queda vacío, `toggle` no hace nada
-4. `toggle(productId)` llama a `toggleWishlistItem(userId, productId)` en Firestore y actualiza el `Set` local simultáneamente
+4. `toggle(productId)` usa actualización optimista: actualiza el `Set` local inmediatamente, luego llama a `toggleWishlistItem(userId, productId)` en Firestore. Si la llamada a Firestore falla, revierte el `Set` local al estado anterior (rollback silencioso)
 
 ### Cambios en componentes existentes
 - `product-card.tsx`: Reemplazar `useState(false)` por `useWishlist()`. El corazón llama `toggle(product.id)`. Estado visual derivado de `isWished(product.id)`.
@@ -47,6 +53,7 @@ interface NewsletterSubscriber {
   email: string;
   locale: Locale;          // idioma en el que se suscribió
   subscribedAt: Date;
+  unsubscribedAt: Date | null; // null = activo, Date = dado de baja
   source: string;          // "homepage_footer" (para futuro tracking)
 }
 // Document ID: hash del email (para evitar duplicados)
@@ -56,7 +63,7 @@ interface NewsletterSubscriber {
 Solo lectura/escritura desde server (admin SDK). El cliente nunca accede directamente.
 
 ### API routes nuevas
-- `POST /api/newsletter/subscribe` — Recibe `{ email, locale }`, valida formato, guarda en Firestore. Pública.
+- `POST /api/newsletter/subscribe` — Recibe `{ email, locale }`, valida formato (regex estándar de email + max 254 chars), guarda en Firestore. Rate limit: máx 5 peticiones por IP por minuto. Si el email ya existe, devuelve 200 (idempotente) sin error. Pública.
 - `GET /api/admin/newsletter/subscribers` — Lista suscriptores con paginación. Protegida (admin).
 - `GET /api/admin/newsletter/subscribers/export` — Devuelve CSV. Protegida (admin).
 
@@ -103,9 +110,16 @@ interface Campaign {
 - Las procesa igual que el envío manual
 
 ### Envío de emails
-- Reutiliza `src/lib/ses.ts`
+- Reutiliza `src/lib/ses.ts` (misma identidad/from address ya configurada)
 - Nueva función `sendCampaignEmail(to, subject, htmlBody)`
-- Envío secuencial con throttling para respetar límites de SES
+- Envío secuencial con throttling: máx 10 emails/segundo (ajustable según tier de SES)
+- Si un email individual falla, se registra el fallo y se continúa con el resto. Al finalizar, `successCount` y `failureCount` reflejan el resultado. Si >50% fallan, el status pasa a "failed"; si no, a "sent"
+
+### Unsubscribe
+- Todos los emails de campaña incluyen un enlace "Unsubscribe" en el footer
+- El enlace apunta a `GET /api/newsletter/unsubscribe?token=<jwt>` que marca al suscriptor como dado de baja (campo `unsubscribedAt: Date | null` en el modelo de `NewsletterSubscriber`)
+- Los suscriptores con `unsubscribedAt != null` se excluyen de los envíos de campañas
+- El token JWT contiene el email, firmado con un secret, para evitar unsubscribes maliciosos
 
 ### Panel admin — `/zr-ops/newsletter/campaigns`
 - Lista de campañas con badge de estado, asunto, fecha
@@ -188,7 +202,7 @@ Mostrar siempre el botón. Si no hay stock, renderizar "Out of stock" deshabilit
 - Sin hover effects
 
 ### Traducciones
-Añadir clave `"outOfStock"` en `en.json`, `es.json` y `zh-HK.json`.
+Reutilizar la clave `"outOfStock"` que ya existe en `en.json`, `es.json` y `zh-HK.json`.
 
 ### Alcance
 Cambio global en `ProductCard` — aplica tanto en related products como en el grid del shop.
