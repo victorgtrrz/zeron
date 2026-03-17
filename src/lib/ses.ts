@@ -1,11 +1,11 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import type { Order } from "@/types";
 
-const ses = new SESClient({
+export const ses = new SESClient({
   region: process.env.AWS_REGION ?? "us-east-1",
 });
 
-const fromEmail = process.env.SES_FROM_EMAIL ?? "noreply@zeron.store";
+export const fromEmail = process.env.SES_FROM_EMAIL ?? "noreply@zeron.store";
 
 export async function sendOrderConfirmation(
   to: string,

@@ -143,3 +143,27 @@ export interface NewsletterSubscriber {
   unsubscribedAt: Date | null;
   source: string;
 }
+
+export interface Campaign {
+  id: string;
+  subject: string;
+  body: string;
+  templateId: string | null;
+  status: "draft" | "scheduled" | "sending" | "sent" | "failed";
+  scheduledAt: Date | null;
+  sentAt: Date | null;
+  recipientCount: number;
+  successCount: number;
+  failureCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CampaignTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
