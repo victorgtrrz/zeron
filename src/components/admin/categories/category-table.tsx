@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Pencil, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import type { Category } from "@/types";
 
 interface CategoryTableProps {
@@ -14,6 +16,8 @@ export function CategoryTable({ onEdit, refreshKey }: CategoryTableProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -34,23 +38,29 @@ export function CategoryTable({ onEdit, refreshKey }: CategoryTableProps) {
     fetchCategories();
   }, [fetchCategories, refreshKey]);
 
-  async function handleDelete(id: string) {
+  async function handleDelete() {
+    if (!deleteConfirm) return;
+    setDeleting(true);
+
     try {
-      const res = await fetch(`/api/admin/categories/${id}`, {
+      const res = await fetch(`/api/admin/categories/${deleteConfirm}`, {
         method: "DELETE",
       });
 
       if (res.ok) {
         setDeleteConfirm(null);
         fetchCategories();
+        toast("Category deleted successfully", "success");
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to delete category");
+        toast(data.error || "Failed to delete category");
         setDeleteConfirm(null);
       }
     } catch {
-      alert("Failed to delete category");
+      toast("Failed to delete category");
       setDeleteConfirm(null);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -145,36 +155,16 @@ export function CategoryTable({ onEdit, refreshKey }: CategoryTableProps) {
         </table>
       </div>
 
-      {/* Delete confirmation dialog */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 backdrop-overlay"
-            onClick={() => setDeleteConfirm(null)}
-          />
-          <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-surface p-6">
-            <h3 className="text-lg font-bold font-heading">Delete Category</h3>
-            <p className="mt-2 text-sm text-muted">
-              Are you sure you want to delete this category? This action cannot
-              be undone. Categories with assigned products cannot be deleted.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="rounded-lg border border-border px-4 py-2 text-sm text-muted transition-colors hover:bg-background hover:text-accent"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-destructive/90"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleDelete}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? This action cannot be undone. Categories with assigned products cannot be deleted."
+        confirmText="Delete"
+        variant="destructive"
+        loading={deleting}
+      />
     </>
   );
 }

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Pencil, Trash2, Filter } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import type { Promotion } from "@/types";
 
 function formatValue(promo: Promotion): string {
@@ -32,6 +34,9 @@ export function PromotionTable() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
   const [modeFilter, setModeFilter] = useState<"all" | "manual" | "auto">("all");
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const fetchPromotions = useCallback(async () => {
     setLoading(true);
@@ -66,27 +71,32 @@ export function PromotionTable() {
           )
         );
       } else {
-        alert("Failed to update promotion");
+        toast("Failed to update promotion");
       }
     } catch {
-      alert("Failed to update promotion");
+      toast("Failed to update promotion");
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this promotion? This action cannot be undone.")) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
 
     try {
-      const res = await fetch(`/api/admin/promotions/${id}`, {
+      const res = await fetch(`/api/admin/promotions/${deleteTarget}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        setPromotions((prev) => prev.filter((p) => p.id !== id));
+        setPromotions((prev) => prev.filter((p) => p.id !== deleteTarget));
+        setDeleteTarget(null);
+        toast("Promotion deleted successfully", "success");
       } else {
-        alert("Failed to delete promotion");
+        toast("Failed to delete promotion");
       }
     } catch {
-      alert("Failed to delete promotion");
+      toast("Failed to delete promotion");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -245,7 +255,7 @@ export function PromotionTable() {
                         <Pencil className="h-3.5 w-3.5" />
                       </Link>
                       <button
-                        onClick={() => handleDelete(promo.id)}
+                        onClick={() => setDeleteTarget(promo.id)}
                         className="rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
                         title="Delete"
                       >
@@ -259,6 +269,17 @@ export function PromotionTable() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Promotion"
+        message="Are you sure you want to delete this promotion? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        loading={deleting}
+      />
     </div>
   );
 }

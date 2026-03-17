@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
 interface StatusUpdaterProps {
   orderId: string;
@@ -30,6 +32,7 @@ export function StatusUpdater({
 }: StatusUpdaterProps) {
   const [updating, setUpdating] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const { toast } = useToast();
 
   const allowedNext = validTransitions[currentStatus] || [];
 
@@ -55,12 +58,13 @@ export function StatusUpdater({
 
       if (res.ok) {
         onUpdate(newStatus);
+        toast("Order status updated", "success");
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to update status");
+        toast(data.error || "Failed to update status");
       }
     } catch {
-      alert("Failed to update status");
+      toast("Failed to update status");
     } finally {
       setUpdating(false);
     }
@@ -98,38 +102,17 @@ export function StatusUpdater({
         ))}
       </div>
 
-      {/* Cancellation confirmation dialog */}
-      {showCancelConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 backdrop-overlay"
-            onClick={() => setShowCancelConfirm(false)}
-          />
-          <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-surface p-6">
-            <h3 className="text-lg font-bold font-heading">Cancel Order</h3>
-            <p className="mt-2 text-sm text-muted">
-              Are you sure you want to cancel this order? This action cannot be
-              undone.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                className="rounded-lg border border-border px-4 py-2 text-sm text-muted transition-colors hover:bg-background hover:text-accent"
-              >
-                Go back
-              </button>
-              <button
-                onClick={() => performUpdate("cancelled")}
-                disabled={updating}
-                className="flex items-center gap-1.5 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-destructive/90 disabled:opacity-50"
-              >
-                {updating && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                Confirm Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={() => performUpdate("cancelled")}
+        title="Cancel Order"
+        message="Are you sure you want to cancel this order? This action cannot be undone."
+        confirmText="Confirm Cancel"
+        cancelText="Go back"
+        variant="destructive"
+        loading={updating}
+      />
     </div>
   );
 }

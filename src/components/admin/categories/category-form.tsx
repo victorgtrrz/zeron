@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { X, Upload, Save, Loader2 } from "lucide-react";
 import { TranslationEditor } from "@/components/admin/products/translation-editor";
 import { uploadImage, deleteImage } from "@/lib/firebase/storage";
+import { useToast } from "@/components/ui/toast";
 import Image from "next/image";
 import type { Category, TranslatedField } from "@/types";
 
@@ -29,6 +30,7 @@ export function CategoryForm({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   async function handleImageUpload(file: File) {
     setUploading(true);
@@ -38,7 +40,7 @@ export function CategoryForm({
       setImage(url);
     } catch (error) {
       console.error("Failed to upload image:", error);
-      alert("Failed to upload image");
+      toast("Failed to upload image");
     } finally {
       setUploading(false);
     }
@@ -59,7 +61,7 @@ export function CategoryForm({
     e.preventDefault();
 
     if (!name.en.trim()) {
-      alert("English name is required");
+      toast("English name is required", "warning");
       return;
     }
 
@@ -73,7 +75,7 @@ export function CategoryForm({
       });
     } catch (error) {
       console.error("Save error:", error);
-      alert("Failed to save category");
+      toast("Failed to save category");
     } finally {
       setSaving(false);
     }

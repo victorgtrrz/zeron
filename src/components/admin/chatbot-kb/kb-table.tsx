@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Pencil, Trash2, Filter } from "lucide-react";
 import { KBForm } from "@/components/admin/chatbot-kb/kb-form";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 import type { ChatbotKBEntry } from "@/types";
 
 function categoryBadgeClass(
@@ -39,6 +41,9 @@ export function KBTable() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [editingEntry, setEditingEntry] = useState<ChatbotKBEntry | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -73,27 +78,32 @@ export function KBTable() {
           )
         );
       } else {
-        alert("Failed to update entry");
+        toast("Failed to update entry");
       }
     } catch {
-      alert("Failed to update entry");
+      toast("Failed to update entry");
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this entry? This action cannot be undone.")) return;
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
 
     try {
-      const res = await fetch(`/api/admin/chatbot-kb/${id}`, {
+      const res = await fetch(`/api/admin/chatbot-kb/${deleteTarget}`, {
         method: "DELETE",
       });
       if (res.ok) {
-        setEntries((prev) => prev.filter((e) => e.id !== id));
+        setEntries((prev) => prev.filter((e) => e.id !== deleteTarget));
+        setDeleteTarget(null);
+        toast("Entry deleted successfully", "success");
       } else {
-        alert("Failed to delete entry");
+        toast("Failed to delete entry");
       }
     } catch {
-      alert("Failed to delete entry");
+      toast("Failed to delete entry");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -244,7 +254,7 @@ export function KBTable() {
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(entry.id)}
+                        onClick={() => setDeleteTarget(entry.id)}
                         className="rounded-lg border border-border p-1.5 text-muted transition-colors hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
                         title="Delete"
                       >
@@ -275,8 +285,17 @@ export function KBTable() {
           onClose={() => setEditingEntry(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Entry"
+        message="Are you sure you want to delete this knowledge base entry? This action cannot be undone."
+        confirmText="Delete"
+        variant="destructive"
+        loading={deleting}
+      />
     </div>
   );
 }
-
-// KBTable is already exported via `export function KBTable` above
