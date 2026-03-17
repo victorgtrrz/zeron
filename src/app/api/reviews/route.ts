@@ -71,44 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!validateRating(rating)) {
-      return NextResponse.json(
-        { error: "Rating must be an integer between 1 and 5" },
-        { status: 400 }
-      );
-    }
-
-    if (!comment || typeof comment !== "string") {
-      return NextResponse.json(
-        { error: "Comment is required" },
-        { status: 400 }
-      );
-    }
-
-    const sanitized = sanitizeComment(comment);
-    if (sanitized.length < 10 || sanitized.length > 500) {
-      return NextResponse.json(
-        { error: "Comment must be between 10 and 500 characters" },
-        { status: 400 }
-      );
-    }
-
-    // Rate limiting: max 5 reviews per hour
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentReviews = await adminDb
-      .collection("reviews")
-      .where("userId", "==", user.uid)
-      .where("createdAt", ">=", oneHourAgo)
-      .get();
-
-    if (recentReviews.size >= 5) {
-      return NextResponse.json(
-        { error: "Rate limit exceeded. Try again later." },
-        { status: 429 }
-      );
-    }
-
-    // Verify product exists
+    // 1. Verify product exists
     const productSnap = await adminDb.collection("products").doc(productId).get();
     if (!productSnap.exists) {
       return NextResponse.json(
@@ -117,7 +80,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify purchase
+    // 2. Verify purchase (paid + delivered)
     const ordersSnap = await adminDb
       .collection("orders")
       .where("userId", "==", user.uid)
@@ -139,7 +102,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check duplicate
+    // 3. Check duplicate review
     const existingReview = await adminDb
       .collection("reviews")
       .where("productId", "==", productId)
@@ -153,7 +116,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create review
+    // 4. Validate rating
+    if (!validateRating(rating)) {
+      return NextResponse.json(
+        { error: "Rating must be an integer between 1 and 5" },
+        { status: 400 }
+      );
+    }
+
+    // 5. Sanitize and validate comment
+    if (!comment || typeof comment !== "string") {
+      return NextResponse.json(
+        { error: "Comment is required" },
+        { status: 400 }
+      );
+    }
+
+    const sanitized = sanitizeComment(comment);
+    if (sanitized.length < 10 || sanitized.length > 500) {
+      return NextResponse.json(
+        { error: "Comment must be between 10 and 500 characters" },
+        { status: 400 }
+      );
+    }
+
+    // 6. Rate limiting: max 5 reviews per hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentReviews = await adminDb
+      .collection("reviews")
+      .where("userId", "==", user.uid)
+      .where("createdAt", ">=", oneHourAgo)
+      .get();
+
+    if (recentReviews.size >= 5) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Try again later." },
+        { status: 429 }
+      );
+    }
+
+    // 7. Create review
     const reviewData = {
       productId,
       userId: user.uid,

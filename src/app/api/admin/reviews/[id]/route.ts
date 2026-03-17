@@ -37,35 +37,36 @@ export async function PUT(
     const reviewData = reviewSnap.data()!;
     const productId = reviewData.productId;
 
-    // Update review status AND recalculate stats atomically in a transaction
+    // Query approved reviews outside transaction (transaction.get only supports DocumentReferences)
+    const approvedSnap = await adminDb
+      .collection("reviews")
+      .where("productId", "==", productId)
+      .where("status", "==", "approved")
+      .get();
+
+    // Calculate what the ratings will be after this status change
+    let ratings: number[] = approvedSnap.docs
+      .filter((d) => d.id !== id)
+      .map((d) => d.data().rating || 0);
+
+    if (status === "approved") {
+      ratings.push(reviewData.rating);
+    }
+
+    const totalReviews = ratings.length;
+    const averageRating =
+      totalReviews > 0
+        ? Math.round((ratings.reduce((a, b) => a + b, 0) / totalReviews) * 10) / 10
+        : 0;
+
+    // Update review status and product stats atomically in a transaction
+    const productRef = adminDb.collection("products").doc(productId);
     await adminDb.runTransaction(async (transaction) => {
       transaction.update(reviewRef, {
         status,
         updatedAt: new Date(),
       });
 
-      const approvedSnap = await transaction.get(
-        adminDb
-          .collection("reviews")
-          .where("productId", "==", productId)
-          .where("status", "==", "approved")
-      );
-
-      let ratings: number[] = approvedSnap.docs
-        .filter((d) => d.id !== id)
-        .map((d) => d.data().rating || 0);
-
-      if (status === "approved") {
-        ratings.push(reviewData.rating);
-      }
-
-      const totalReviews = ratings.length;
-      const averageRating =
-        totalReviews > 0
-          ? Math.round((ratings.reduce((a, b) => a + b, 0) / totalReviews) * 10) / 10
-          : 0;
-
-      const productRef = adminDb.collection("products").doc(productId);
       transaction.update(productRef, {
         reviewStats: { averageRating, totalReviews },
       });
