@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Heart } from "lucide-react";
 import { SizeSelector } from "@/components/product/size-selector";
 import { AddToCartButton } from "@/components/product/add-to-cart-button";
+import { useWishlist } from "@/hooks/use-wishlist";
 import type { Product } from "@/types";
 
 interface ProductDetailClientProps {
@@ -12,7 +13,7 @@ interface ProductDetailClientProps {
 
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [isWished, setIsWished] = useState(false);
+  const { isWished, toggle: toggleWishlist } = useWishlist();
 
   return (
     <div className="flex flex-col gap-6">
@@ -28,16 +29,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
           <AddToCartButton product={product} selectedSize={selectedSize} />
         </div>
         <button
-          onClick={() => setIsWished((prev) => !prev)}
+          onClick={() => toggleWishlist(product.id)}
           className={`flex h-14 w-14 items-center justify-center rounded-lg border transition-colors ${
-            isWished
+            isWished(product.id)
               ? "border-red-500 bg-red-500/10 text-red-500"
               : "border-border text-muted hover:text-accent hover:border-accent"
           }`}
           aria-label="Toggle wishlist"
         >
           <Heart
-            className={`h-5 w-5 ${isWished ? "fill-red-500" : ""}`}
+            className={`h-5 w-5 ${isWished(product.id) ? "fill-red-500" : ""}`}
           />
         </button>
       </div>
