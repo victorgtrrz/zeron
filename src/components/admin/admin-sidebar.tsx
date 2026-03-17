@@ -14,6 +14,7 @@ import {
   Settings,
   ArrowLeft,
   Mail,
+  Star,
 } from "lucide-react";
 
 const navLinks = [
@@ -21,6 +22,7 @@ const navLinks = [
   { href: "/zr-ops/products", label: "Products", icon: Package },
   { href: "/zr-ops/categories", label: "Categories", icon: Tags },
   { href: "/zr-ops/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/zr-ops/reviews", label: "Reviews", icon: Star },
   { href: "/zr-ops/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/zr-ops/promotions", label: "Promotions", icon: Percent },
   { href: "/zr-ops/newsletter", label: "Newsletter", icon: Mail },
