@@ -6,6 +6,7 @@ import { ProductDetailClient } from "@/components/product/product-detail-client"
 import { ProductJsonLd } from "@/components/product/product-jsonld";
 import { RelatedProducts } from "@/components/product/related-products";
 import { routing } from "@/i18n/routing";
+import { MarkdownContent } from "@/components/product/markdown-content";
 import type { Locale } from "@/types";
 import type { Metadata } from "next";
 
@@ -88,9 +89,7 @@ export default async function ProductDetailPage({
             <p className="mt-2 text-2xl font-bold text-accent">{price}</p>
           </div>
 
-          <div className="prose prose-invert max-w-none">
-            <p className="text-sm leading-relaxed text-muted">{description}</p>
-          </div>
+          <MarkdownContent content={description} />
 
           {/* Client-side interactive bits: size selector, add to cart, wishlist */}
           <ProductDetailClient product={product} />

@@ -66,8 +66,8 @@ export function TranslationEditor({
           value={value[activeTab] || ""}
           onChange={(e) => handleChange(activeTab, e.target.value)}
           placeholder={`Enter text in ${tabs.find((t) => t.key === activeTab)?.label}`}
-          rows={4}
-          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-accent placeholder:text-muted/50 focus:border-brand focus:outline-none"
+          rows={6}
+          className="w-full rounded-lg border border-border bg-background px-4 py-2.5 font-mono text-sm text-accent placeholder:text-muted/50 focus:border-brand focus:outline-none"
         />
       )}
     </div>
